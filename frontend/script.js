@@ -1,0 +1,1 @@
+console.log("LEGO Portfolio frontend is running.");
