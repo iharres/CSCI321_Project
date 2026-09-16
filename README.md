@@ -1,4 +1,4 @@
-# BrickFolio — LEGO Portfolio & Financial Tracking
+# BrickWallet — LEGO Portfolio & Financial Tracking
 
 Track the value of your LEGO collection the way you'd track a stock portfolio — real-time pricing, condition-aware valuations, and gains/losses at a glance.
 
