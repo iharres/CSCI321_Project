@@ -39,7 +39,7 @@ Planned expansions beyond the initial release:
 
 ## Team
 Ian Harres - Backend
-Immanuel Pitts - Github and where ever else help is needed
+Immanuel Pitts - Github and Website Design 
 Will Stallworth - Frontend
 
 ## Status
