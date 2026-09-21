@@ -1,11 +1,35 @@
-fetch("http://localhost:8080/api/sets")
+console.log("Script is running");
+
+
+fetch("http://localhost:8080/api/portfolio")
     .then(response => response.json())
-    .then(sets => {
+    .then(portfolio => {
+
+        console.log(portfolio);
+
+
+        // Update portfolio summary
+
+        document.getElementById("total-cost").innerHTML =
+            "Total Cost: $" + portfolio.totalCost;
+
+
+        document.getElementById("current-value").innerHTML =
+            "Current Value: $" + portfolio.currentValue;
+
+
+        document.getElementById("profit").innerHTML =
+            "Profit: $" + portfolio.profit;
+
+
+
+        // Display LEGO sets
 
         const container = document.getElementById("lego-container");
 
 
-        sets.forEach(set => {
+        portfolio.sets.forEach(set => {
+
 
             const legoCard = document.createElement("div");
 
@@ -25,9 +49,10 @@ fetch("http://localhost:8080/api/sets")
 
         });
 
+
     })
     .catch(error => {
 
-        console.error("Error loading LEGO sets:", error);
+        console.error("Error loading portfolio:", error);
 
     });
