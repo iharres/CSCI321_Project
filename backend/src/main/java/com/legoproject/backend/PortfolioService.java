@@ -29,4 +29,8 @@ public class PortfolioService {
     public void removeSet(String setNumber) {
         portfolio.removeSet(setNumber);
     }
+
+    public void updateSet(String setNumber, LegoSet updatedSet) {
+        portfolio.updateSet(setNumber, updatedSet);
+    }
 }

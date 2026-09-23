@@ -44,4 +44,14 @@ public class Portfolio {
         sets.removeIf(set -> set.getSetNumber().equals(setNumber));
     }
 
+    public void updateSet(String setNumber, LegoSet updatedSet){
+        for (LegoSet set : sets){
+            if(set.getSetNumber().equals(setNumber)){
+                set.setName(updatedSet.getName());
+                set.setCurrentValue(updatedSet.getCurrentValue());
+                set.setPurchasePrice(updatedSet.getPurchasePrice());
+            }
+        }
+    }
+
 }

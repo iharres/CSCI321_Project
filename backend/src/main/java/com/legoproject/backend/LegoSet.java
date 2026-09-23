@@ -42,6 +42,18 @@ public class LegoSet {
 
     }
 
+    public void setCurrentValue(double currentValue){
+        this.currentValue = currentValue;
+    }
+
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public void setPurchasePrice(double purchasePrice){
+        this.purchasePrice = purchasePrice;
+    }
+
 }
 
 
