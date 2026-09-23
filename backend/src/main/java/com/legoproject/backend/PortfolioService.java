@@ -5,9 +5,11 @@ import org.springframework.stereotype.Service;
 @Service
 
 public class PortfolioService {
+    private final Portfolio portfolio;
 
-    public Portfolio getPortfolio(){
-        Portfolio portfolio = new Portfolio();
+    public PortfolioService(){
+        portfolio = new Portfolio();
+
         portfolio.addSet(
                 new LegoSet(
                         "10294",
@@ -16,6 +18,15 @@ public class PortfolioService {
                         650
                 )
         );
+    }
+    public Portfolio getPortfolio(){
         return portfolio;
+    }
+
+    public void addSet(LegoSet set){
+        portfolio.addSet(set);
+    }
+    public void removeSet(String setNumber) {
+        portfolio.removeSet(setNumber);
     }
 }

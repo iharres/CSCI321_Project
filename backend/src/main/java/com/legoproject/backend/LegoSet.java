@@ -7,6 +7,9 @@ public class LegoSet {
     private double purchasePrice;
     private double currentValue;
 
+    public LegoSet(){
+
+    }
     public LegoSet(String setNumber, String name, double purchasePrice, double currentValue){
         this.setNumber = setNumber;
         this.name = name;
@@ -34,7 +37,7 @@ public class LegoSet {
         return currentValue - purchasePrice;
     }
 
-    public double getReturnProfit(){
+    public double getReturnProfitPercent(){
         return ((currentValue - purchasePrice) / purchasePrice) * 100;
 
     }

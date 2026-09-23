@@ -39,4 +39,9 @@ public class Portfolio {
     public List<LegoSet> getSets(){
         return sets;
     }
+
+    public void removeSet(String setNumber) {
+        sets.removeIf(set -> set.getSetNumber().equals(setNumber));
+    }
+
 }
