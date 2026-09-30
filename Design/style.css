@@ -1,0 +1,453 @@
+/* Pulls in the three fonts used across the whole site (headings, body text, and mono numbers). */
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+/* Central color palette so every component below just reuses these names instead of repeating hex codes. */
+:root{
+  --cream: #efe9d8;
+  --paper: #ffffff;
+  --ink: #24231c;
+  --ink-dim: #6b6a5c;
+  --line: #24231c22;
+  --red: #c31f2c;
+  --blue: #1a5fb4;
+  --yellow: #f2b705;
+  --green: #1e7a3d;
+  --orange: #e2792e;
+  --good: #1e7a3d;
+  --bad: #c31f2c;
+}
+
+/* Makes width/height calculations include padding and border, which is easier to reason about. */
+*{ box-sizing: border-box; }
+/* Sets the page's default background, text color, and body font. */
+body{
+  margin:0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Work Sans', system-ui, sans-serif;
+}
+/* Headings use the bold, blocky display font instead of the body font. */
+h1,h2,h3{ font-family:'Unbounded', system-ui, sans-serif; margin:0; text-wrap:balance; }
+
+/* Centers the page content and caps its width so it doesn't stretch too wide on big screens. */
+.container{ max-width: 980px; margin-inline:auto; padding-inline:16px; }
+
+/* ---------- nav ---------- */
+/* The top navigation bar: logo on the left, page links in the middle, buttons on the right. */
+nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding-block: 16px;
+}
+/* The "Brick Wallet" logo text plus its little brick icon. */
+.logo{
+  display:flex; align-items:center; gap:8px;
+  font-family:'Unbounded', sans-serif; font-weight:700; font-size:18px;
+}
+/* The small red square that acts as the brick-shaped logo mark. */
+.logo .mark{
+  width:26px; height:26px; border-radius:6px; background:var(--red);
+  box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+  position:relative;
+}
+/* Draws the two small round "studs" on top of the logo brick. */
+.logo .mark::before, .logo .mark::after{
+  content:""; position:absolute; top:-6px; width:9px; height:9px; border-radius:50%;
+  background:var(--red); box-shadow: inset 0 -1px 2px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.35);
+}
+.logo .mark::before{ left:4px; }
+.logo .mark::after{ right:4px; }
+/* The row of Collection / Marketplace / Insights links. */
+.nav-links{ display:flex; gap:22px; font-size:14px; font-weight:600; }
+.nav-links a{ color:var(--ink); text-decoration:none; opacity:.75; }
+/* Underlines whichever nav link is currently the active page. */
+.nav-links a.active{ opacity:1; border-bottom:3px solid var(--yellow); padding-bottom:3px; }
+/* The blue "+ Add a Set" call-to-action button in the nav. */
+.nav-cta{
+  font-family:'Work Sans', sans-serif; font-weight:700; font-size:13px;
+  color:#fff; background:var(--blue); border:none; border-radius:8px;
+  padding: 10px 16px; box-shadow: 0 4px 0 rgba(0,0,0,0.25); cursor:pointer;
+}
+
+/* Groups the "Add a Set" button and the account menu together on the right side of the nav. */
+.nav-right{ display:flex; align-items:center; gap:12px; }
+
+/* ---------- account manager ---------- */
+/* Wrapper for the avatar button and its dropdown, positioned so the dropdown can anchor to it. */
+.account{ position:relative; }
+/* The clickable avatar + name + arrow button that opens the account dropdown. */
+.account-btn{
+  display:flex; align-items:center; gap:8px;
+  background:transparent; border:none; cursor:pointer; padding:4px 6px 4px 4px;
+  border-radius:999px;
+}
+.account-btn:hover{ background:rgba(36,35,28,0.05); }
+/* The circular profile picture placeholder (a colored circle with a simple person silhouette drawn on it). */
+.avatar{
+  width:36px; height:36px; border-radius:50%; position:relative; overflow:hidden;
+  background: linear-gradient(135deg, var(--yellow), var(--orange));
+  border:2px solid #fff; box-shadow: 0 2px 0 rgba(0,0,0,0.15); flex-shrink:0;
+}
+/* Draws the "head" part of the avatar silhouette. */
+.avatar::before{
+  content:""; position:absolute; width:15px; height:15px; border-radius:50%;
+  background:#fff; opacity:0.92; top:6px; left:50%; transform:translateX(-50%);
+}
+/* Draws the "shoulders" part of the avatar silhouette. */
+.avatar::after{
+  content:""; position:absolute; width:25px; height:13px; border-radius:13px 13px 0 0;
+  background:#fff; opacity:0.92; bottom:-1px; left:50%; transform:translateX(-50%);
+}
+.account-name{ font-size:13px; font-weight:600; }
+/* The little down-arrow next to the account name that flips upside-down when the menu is open. */
+.account-caret{ font-size:10px; color:var(--ink-dim); transition: transform .15s; }
+.account.open .account-caret{ transform: rotate(180deg); }
+
+/* The dropdown panel itself: positioned under the avatar button, hidden until opened. */
+.account-menu{
+  position:absolute; top:calc(100% + 10px); right:0; width:230px;
+  background:var(--paper); border:1px solid var(--line); border-radius:14px;
+  box-shadow: 0 12px 30px -12px rgba(0,0,0,0.28);
+  padding:8px; z-index:20;
+}
+/* The [hidden] attribute (toggled by JS) is what actually shows/hides this menu. */
+.account-menu[hidden]{ display:none; }
+/* The header row inside the dropdown showing the bigger avatar, name, and handle. */
+.account-menu-head{ display:flex; align-items:center; gap:10px; padding:8px 8px 12px; }
+.account-menu-head .avatar{ width:40px; height:40px; }
+.account-menu-head .avatar::before{ width:16px; height:16px; top:7px; }
+.account-menu-head .avatar::after{ width:28px; height:14px; }
+.account-menu-head .who .who-name{ font-size:13.5px; font-weight:700; }
+.account-menu-head .who .who-handle{ font-size:12px; color:var(--ink-dim); }
+/* Thin divider lines between groups of menu items. */
+.account-menu hr{ border:none; border-top:1px solid var(--line); margin:6px 0; }
+/* Each clickable row in the dropdown (Your Profile, Settings, Sign out, etc). */
+.account-menu a{
+  display:flex; align-items:center; gap:9px;
+  padding:9px 8px; border-radius:8px; font-size:13px; font-weight:500;
+  color:var(--ink); text-decoration:none;
+}
+.account-menu a:hover{ background:rgba(36,35,28,0.06); }
+/* Colors the "Sign out" row red to signal it's a different/important action. */
+.account-menu a.danger{ color:var(--red); }
+.account-menu .mi{ width:16px; text-align:center; opacity:.8; }
+
+/* ---------- hero ---------- */
+/* The big banner at the top of the Collection page, using the brick-pattern SVG as its background image. */
+.hero{
+  position:relative;
+  height: 340px;
+  margin-top: 6px;
+  border-radius: 18px;
+  overflow:hidden;
+  background-image: url("bricks-pattern.svg");
+  background-repeat: repeat;
+  background-size: 280px 196px;
+  background-position: center;
+}
+/* Darkens the brick pattern with a gradient overlay so the white text on top stays readable. */
+.hero::after{
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(10,10,8,0.28), rgba(10,10,8,0.74));
+}
+/* Centers the hero's title, tagline, and button both vertically and horizontally. */
+.hero-inner{
+  position:relative; z-index:1; height:100%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; color:#fff; padding: 0 20px;
+}
+/* The small yellow label above the hero title ("Your Collection, Valued Live"). */
+.hero-inner .eyebrow{
+  font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--yellow); margin-bottom: 10px;
+}
+/* The big "Brick Wallet" hero title. */
+.hero-inner h1{
+  font-size: clamp(30px, 5vw, 46px);
+  font-weight:900;
+  text-shadow: 0 4px 16px rgba(0,0,0,0.55);
+}
+/* The tagline sentence under the hero title. */
+.hero-inner p{
+  margin-top:10px; font-size:15px; max-width:44ch; opacity:.92;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+/* The red "Start tracking free" button in the hero. */
+.hero-cta{
+  margin-top: 20px;
+  display:inline-flex; align-items:center; gap:10px;
+  background:var(--red); color:#fff; border:none;
+  font-family:'Work Sans',sans-serif; font-weight:700; font-size:14px;
+  padding: 13px 22px; border-radius:10px;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+  cursor:pointer;
+}
+/* The two tiny decorative "studs" drawn inside the hero button. */
+.hero-cta .stud-pair{ display:flex; gap:4px; }
+.hero-cta .stud-pair span{
+  width:9px; height:9px; border-radius:50%; background:#fff;
+  box-shadow: inset 0 -1px 2px rgba(0,0,0,0.25);
+}
+
+/* ---------- stats ---------- */
+/* Lays out the three colored summary tiles (Portfolio Value, Sets Tracked, All-Time Gain) side by side, overlapping the hero slightly. */
+.stat-row{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+  margin-top: -34px; position:relative; z-index:2; padding: 0 6px;
+}
+/* One colored summary tile. */
+.stat{
+  border-radius:12px; padding:16px 18px; color:#fff;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.22);
+}
+/* Gives the first three stat tiles their red/blue/green brand colors by position. */
+.stat:nth-child(1){ background:var(--red); }
+.stat:nth-child(2){ background:var(--blue); }
+.stat:nth-child(3){ background:var(--green); }
+.stat .label{ font-size:11px; text-transform:uppercase; letter-spacing:.08em; opacity:.85; }
+.stat .value{ font-family:'IBM Plex Mono', monospace; font-size:24px; margin-top:6px; font-weight:600; }
+.stat .sub{ font-family:'IBM Plex Mono', monospace; font-size:12px; margin-top:3px; opacity:.85; }
+
+/* ---------- section heads ---------- */
+/* The repeated "Section Title .......... link" row used above every list/grid/chart on the page. */
+.section-head{
+  display:flex; align-items:baseline; justify-content:space-between;
+  margin: 40px 0 14px;
+}
+.section-head h2{ font-size:19px; }
+.section-head .view-all{ font-size:12.5px; font-weight:600; color:var(--ink-dim); }
+
+/* ---------- holdings list ---------- */
+/* The white card that wraps a list of rows (used for Top Holdings and Top Movers). */
+.list{ background:var(--paper); border-radius:14px; overflow:hidden; border:1px solid var(--line); }
+/* One row inside a list: a set name on the left, price/change on the right. */
+.row{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 13px 16px; font-size:13.5px;
+}
+/* Adds a thin line between rows so they don't need individual borders. */
+.row + .row{ border-top:1px solid var(--line); }
+.set-name{ display:flex; align-items:center; gap:10px; font-weight:500; }
+/* The small colored square next to a set's name, matching its card color elsewhere on the page. */
+.swatch{ width:14px; height:14px; border-radius:4px; box-shadow: inset 0 -1px 1px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.3); }
+/* The small pill label showing a set's condition. */
+.badge{
+  font-size:10px; padding:2px 8px; border-radius:5px; font-family:'IBM Plex Mono', monospace;
+  text-transform:uppercase; letter-spacing:.03em;
+}
+.badge.new{ background:#dff2df; color:#1e7a3d; }
+.badge.used{ background:#fde8cf; color:#a85a12; }
+/* The price-change number, colored green for gains and red for losses. */
+.delta{ font-family:'IBM Plex Mono', monospace; font-size:13.5px; font-weight:600; }
+.delta.up{ color:var(--good); }
+.delta.down{ color:var(--bad); }
+.row-right{ display:flex; align-items:center; gap:18px; }
+.price{ font-family:'IBM Plex Mono', monospace; font-weight:600; }
+
+/* ---------- collection grid ---------- */
+/* The responsive grid of set cards under "Your Sets". */
+.grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px;
+}
+/* One set card in the grid. */
+.card{
+  background:var(--paper); border-radius:12px; overflow:hidden;
+  border:1px solid var(--line);
+  box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+}
+/* The colored top strip of a set card, meant to look like the top of a LEGO brick with studs. */
+.card-top{
+  height:56px; position:relative;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+/* One decorative stud circle on top of a set card. */
+.card-top .stud{
+  width:14px; height:14px; border-radius:50%;
+  box-shadow: inset 0 -2px 2px rgba(0,0,0,0.3), inset 0 2px 2px rgba(255,255,255,0.3);
+}
+/* Cycles each card through the brand colors based on its position in the grid. */
+.card:nth-child(1) .card-top{ background:var(--red); }
+.card:nth-child(1) .stud{ background:#d9564d; }
+.card:nth-child(2) .card-top{ background:var(--blue); }
+.card:nth-child(2) .stud{ background:#4c85cf; }
+.card:nth-child(3) .card-top{ background:var(--yellow); }
+.card:nth-child(3) .stud{ background:#f6cb4f; }
+.card:nth-child(4) .card-top{ background:var(--green); }
+.card:nth-child(4) .stud{ background:#59a173; }
+.card:nth-child(5) .card-top{ background:var(--orange); }
+.card:nth-child(5) .stud{ background:#eb9a5e; }
+.card:nth-child(6) .card-top{ background:var(--red); }
+.card:nth-child(6) .stud{ background:#d9564d; }
+/* The white bottom section of a set card showing its name, price, and change. */
+.card-body{ padding:12px 13px; }
+.card-body .name{ font-size:13px; font-weight:600; }
+.card-body .meta{ display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+.card-body .price{ font-size:14px; }
+.card-body .delta{ font-size:12px; }
+
+/* The small print at the very bottom of the page. */
+footer{
+  margin-top: 56px; padding: 28px 0 44px;
+  border-top:1px solid var(--line);
+  color:var(--ink-dim); font-size:13px; line-height:1.6;
+}
+
+/* Adjustments for small/mobile screens: stack the stat tiles, shrink the hero, and hide less-essential nav items. */
+@media (max-width:640px){
+  .stat-row{ grid-template-columns:1fr; margin-top:16px; }
+  .hero{ height:300px; }
+  .nav-links{ display:none; }
+  .nav-cta{ display:none; }
+  .account-name, .account-caret{ display:none; }
+}
+
+/* ---------- value chart ---------- */
+/* The white card that holds the Portfolio Value line chart. */
+.chart-card{
+  background:var(--paper); border-radius:14px; border:1px solid var(--line);
+  padding: 18px 18px 8px;
+}
+/* The big current value and its percentage change shown above the chart. */
+.chart-top{
+  display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px;
+}
+.chart-top .value{ font-family:'IBM Plex Mono', monospace; font-size:20px; font-weight:600; }
+.chart-top .delta{ font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:600; color:var(--good); margin-left:8px; }
+.chart-range{ font-size:12.5px; color:var(--ink-dim); font-weight:600; }
+/* Wraps the chart SVG so the hover tooltip (an absolutely-positioned div) can line up with it. */
+.chart-svg-wrap{ position:relative; }
+.chart-svg-wrap svg{ display:block; width:100%; height:auto; overflow:visible; }
+/* The faint horizontal reference lines behind the chart line. */
+.grid-line{ stroke:rgba(36,35,28,0.09); stroke-width:1; }
+.axis-label{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; fill:var(--ink-dim); }
+.month-label{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; fill:var(--ink-dim); text-anchor:middle; }
+/* The soft green fill under the chart line. */
+.value-area{ fill:var(--green); opacity:0.1; }
+/* The chart line itself. */
+.value-line{ fill:none; stroke:var(--green); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+/* The dot marking the most recent (rightmost) value on the chart. */
+.end-dot{ fill:var(--green); stroke:var(--paper); stroke-width:2; }
+.end-label{ font-family:'IBM Plex Mono', monospace; font-size:12.5px; font-weight:600; fill:var(--ink); }
+/* The vertical line and dot that follow the mouse when hovering the chart (shown/hidden by script.js). */
+.crosshair{ stroke:var(--ink); stroke-opacity:0.18; stroke-width:1; opacity:0; }
+.hover-dot{ fill:var(--green); stroke:var(--paper); stroke-width:2; opacity:0; }
+/* The invisible rectangle drawn over the chart that actually listens for mouse movement. */
+.chart-hit{ fill:transparent; cursor:crosshair; }
+/* The small dark tooltip box that shows the exact dollar value under the mouse. */
+.chart-tooltip{
+  position:absolute; transform: translate(-50%, -130%);
+  background:#24231c; color:#fff; font-family:'IBM Plex Mono', monospace;
+  font-size:12px; font-weight:600; padding:5px 9px; border-radius:6px;
+  pointer-events:none; white-space:nowrap;
+}
+/* The little triangle "pointer" under the tooltip box. */
+.chart-tooltip::after{
+  content:""; position:absolute; left:50%; top:100%; transform:translateX(-50%);
+  border:5px solid transparent; border-top-color:#24231c;
+}
+
+/* ---------- view switching ---------- */
+/* Whichever page section (.view) has the hidden attribute is completely removed from layout, so only one page shows at a time. */
+.view[hidden]{ display:none !important; }
+.nav-links a{ cursor:pointer; }
+
+/* ---------- marketplace ---------- */
+/* The search input mock at the top of the Marketplace page. */
+.search-bar{
+  display:flex; align-items:center; gap:10px;
+  background:var(--paper); border:1px solid var(--line); border-radius:12px;
+  padding: 13px 16px; margin-top:18px; color:var(--ink-dim); font-size:14px;
+}
+.search-bar .icon{ font-size:15px; }
+
+/* The big card on the Marketplace page comparing one set's price across sources. */
+.compare-card{
+  background:var(--paper); border-radius:14px; border:1px solid var(--line);
+  padding:20px; margin-top:16px; display:flex; gap:20px;
+}
+/* The colored square placeholder standing in for the set's box art. */
+.compare-thumb{
+  width:96px; height:96px; border-radius:12px; flex-shrink:0;
+  background: var(--red);
+  display:flex; align-items:center; justify-content:center; gap:5px;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+}
+.compare-thumb span{
+  width:14px; height:14px; border-radius:50%; background:#d9564d;
+  box-shadow: inset 0 -2px 2px rgba(0,0,0,0.3), inset 0 2px 2px rgba(255,255,255,0.3);
+}
+.compare-main{ flex:1; min-width:0; }
+.compare-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.compare-head h3{ font-size:17px; }
+.compare-head .set-num{ color:var(--ink-dim); font-size:12.5px; font-family:'IBM Plex Mono',monospace; }
+/* The New/Sealed vs Used pill buttons (script.js toggles which one looks active). */
+.cond-toggle{ display:flex; gap:8px; margin-top:12px; }
+.pill{
+  font-size:12.5px; font-weight:600; padding:6px 14px; border-radius:999px;
+  border:1.5px solid var(--line); background:transparent; color:var(--ink-dim); cursor:pointer;
+}
+.pill.active{ background:var(--ink); color:#fff; border-color:var(--ink); }
+
+/* The list of individual marketplace sources (eBay, BrickLink, PriceCharting) and their prices. */
+.source-list{ margin-top:16px; }
+.source-row{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 0; font-size:13.5px;
+}
+.source-row + .source-row{ border-top:1px solid var(--line); }
+.source-name{ display:flex; align-items:center; gap:9px; font-weight:600; }
+/* The small colored dot identifying which source a row belongs to. */
+.source-dot{ width:9px; height:9px; border-radius:50%; }
+.source-meta{ color:var(--ink-dim); font-size:12px; font-weight:400; margin-left:4px; }
+.source-price{ font-family:'IBM Plex Mono',monospace; font-weight:600; }
+
+/* The highlighted green banner showing Brick Wallet's own combined/estimated price. */
+.best-price{
+  margin-top:14px; display:flex; align-items:center; justify-content:space-between;
+  background: var(--green); color:#fff; border-radius:10px; padding:14px 16px;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+}
+.best-price .bp-label{ font-size:11px; text-transform:uppercase; letter-spacing:.07em; opacity:.9; }
+.best-price .bp-value{ font-family:'IBM Plex Mono',monospace; font-size:21px; font-weight:600; margin-top:3px; }
+.best-price .bp-note{ font-size:11.5px; opacity:.9; max-width:26ch; text-align:right; }
+
+/* The grid of small "Recently Compared" set cards further down the Marketplace page. */
+.mk-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:14px; margin-top:14px; }
+.mk-card{
+  background:var(--paper); border-radius:12px; border:1px solid var(--line); padding:14px;
+  display:flex; gap:12px; align-items:center;
+}
+.mk-card .mk-swatch{ width:40px; height:40px; border-radius:8px; flex-shrink:0; box-shadow: 0 3px 0 rgba(0,0,0,0.16); }
+.mk-card .mk-name{ font-size:13px; font-weight:600; }
+.mk-card .mk-best{ font-size:12px; color:var(--ink-dim); margin-top:3px; }
+.mk-card .mk-best b{ color:var(--ink); font-family:'IBM Plex Mono',monospace; }
+
+/* ---------- insights ---------- */
+/* The white card holding the horizontal "Value by Theme" bars. */
+.theme-bars{ background:var(--paper); border-radius:14px; border:1px solid var(--line); padding:20px; margin-top:14px; }
+.theme-row{ margin-bottom:16px; }
+.theme-row:last-child{ margin-bottom:0; }
+.theme-row .theme-top{ display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; }
+.theme-row .theme-top .tname{ font-weight:600; }
+.theme-row .theme-top .tval{ font-family:'IBM Plex Mono',monospace; color:var(--ink-dim); }
+/* The light track (background) each theme's bar sits on. */
+.theme-track{ background:#e7f0fb; border-radius:999px; height:14px; overflow:hidden; }
+/* The filled portion of each theme's bar; its width (set inline in the HTML) shows that theme's share. */
+.theme-fill{ background:var(--blue); height:100%; border-radius:999px; }
+
+/* The card holding the New/Sealed vs Used proportion bar. */
+.split-card{ background:var(--paper); border-radius:14px; border:1px solid var(--line); padding:20px; margin-top:14px; }
+.split-labels{ display:flex; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:8px; }
+.split-labels .new-lab{ color:var(--green); }
+.split-labels .used-lab{ color:var(--orange); }
+/* The two-segment bar itself; each segment's width (set inline in the HTML) is its percentage of the total. */
+.split-bar{ display:flex; height:20px; border-radius:8px; overflow:hidden; gap:2px; }
+.split-new{ background:var(--green); }
+.split-used{ background:var(--orange); }
+
+/* Lays the two "Top Movers" lists (gainers and losers) side by side. */
+.movers-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px; }
+/* On small screens, stack the movers lists and the marketplace compare card instead of showing them side by side. */
+@media (max-width:640px){ .movers-grid{ grid-template-columns:1fr; } .compare-card{ flex-direction:column; } }
