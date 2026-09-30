@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brick Wallet</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <nav>
+    <div class="logo"><span class="mark"></span> Brick Wallet</div>
+    <div class="nav-links">
+      <a href="#" class="active" data-view="collection">Collection</a>
+      <a href="#" data-view="marketplace">Marketplace</a>
+      <a href="#" data-view="insights">Insights</a>
+    </div>
+    <div class="nav-right">
+      <button class="nav-cta">+ Add a Set</button>
+      <div class="account" id="accountMenuRoot">
+        <button class="account-btn" id="accountBtn" aria-haspopup="true" aria-expanded="false">
+          <span class="avatar"></span>
+          <span class="account-name">Manny P.</span>
+          <span class="account-caret">▾</span>
+        </button>
+        <div class="account-menu" id="accountMenu" hidden>
+          <div class="account-menu-head">
+            <span class="avatar"></span>
+            <div class="who">
+              <div class="who-name">Manny P.</div>
+              <div class="who-handle">@goodsreloaded</div>
+            </div>
+          </div>
+          <hr>
+          <a href="#"><span class="mi">👤</span> Your Profile</a>
+          <a href="#"><span class="mi">🧱</span> Collection Settings</a>
+          <a href="#"><span class="mi">🔔</span> Notifications</a>
+          <hr>
+          <a href="#" class="danger"><span class="mi">⏻</span> Sign out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div id="view-collection" class="view">
+
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">Your Collection, Valued Live</span>
+      <h1>Brick Wallet</h1>
+      <p>Track your LEGO collection like a stock portfolio — real market pricing, sorted by condition, updated automatically.</p>
+      <button class="hero-cta"><span class="stud-pair"><span></span><span></span></span> Start tracking free</button>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat">
+      <div class="label">Portfolio Value</div>
+      <div class="value">$4,812.40</div>
+      <div class="sub">▲ $62 today</div>
+    </div>
+    <div class="stat">
+      <div class="label">Sets Tracked</div>
+      <div class="value">37</div>
+      <div class="sub">4 wishlisted</div>
+    </div>
+    <div class="stat">
+      <div class="label">All-Time Gain</div>
+      <div class="value">+18.6%</div>
+      <div class="sub">since first added</div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2>Portfolio Value</h2>
+    <span class="chart-range">Last 6 months</span>
+  </div>
+  <div class="chart-card">
+    <div class="chart-top">
+      <span class="value">$4,812</span><span class="delta">▲ 18.6% all-time</span>
+    </div>
+    <div class="chart-svg-wrap">
+      <svg id="valueChart" viewBox="0 0 860 260" preserveAspectRatio="xMidYMid meet">
+        <line class="grid-line" x1="46" y1="191.3" x2="840" y2="191.3"></line>
+        <line class="grid-line" x1="46" y1="122.0" x2="840" y2="122.0"></line>
+        <line class="grid-line" x1="46" y1="52.7" x2="840" y2="52.7"></line>
+        <text class="axis-label" x="40" y="195" text-anchor="end">$4,000</text>
+        <text class="axis-label" x="40" y="125.5" text-anchor="end">$4,400</text>
+        <text class="axis-label" x="40" y="56.2" text-anchor="end">$4,800</text>
+
+        <path class="value-area" d="M 46.0,200.0 L 77.8,194.8 L 109.5,189.6 L 141.3,196.5 L 173.0,184.4 L 204.8,175.7 L 236.6,179.2 L 268.3,168.8 L 300.1,160.1 L 331.8,165.3 L 363.6,153.2 L 395.4,146.3 L 427.1,139.3 L 458.9,142.8 L 490.6,130.7 L 522.4,122.0 L 554.2,125.5 L 585.9,111.6 L 617.7,102.9 L 649.4,106.4 L 681.2,94.3 L 713.0,85.6 L 744.7,78.7 L 776.5,70.0 L 808.2,59.6 L 840.0,50.6 L 840.0,226 L 46.0,226 Z"></path>
+        <path class="value-line" d="M 46.0,200.0 L 77.8,194.8 L 109.5,189.6 L 141.3,196.5 L 173.0,184.4 L 204.8,175.7 L 236.6,179.2 L 268.3,168.8 L 300.1,160.1 L 331.8,165.3 L 363.6,153.2 L 395.4,146.3 L 427.1,139.3 L 458.9,142.8 L 490.6,130.7 L 522.4,122.0 L 554.2,125.5 L 585.9,111.6 L 617.7,102.9 L 649.4,106.4 L 681.2,94.3 L 713.0,85.6 L 744.7,78.7 L 776.5,70.0 L 808.2,59.6 L 840.0,50.6"></path>
+
+        <text class="month-label" x="46" y="248">Apr</text>
+        <text class="month-label" x="204.8" y="248">May</text>
+        <text class="month-label" x="363.6" y="248">Jun</text>
+        <text class="month-label" x="522.4" y="248">Jul</text>
+        <text class="month-label" x="681.2" y="248">Aug</text>
+        <text class="month-label" x="840" y="248" text-anchor="end">Sep</text>
+
+        <circle class="end-dot" cx="840.0" cy="50.6" r="5"></circle>
+        <text class="end-label" x="800" y="38" text-anchor="end">$4,812</text>
+
+        <line id="crosshair" class="crosshair" x1="46" y1="18" x2="46" y2="226"></line>
+        <circle id="hoverDot" class="hover-dot" cx="0" cy="0" r="5"></circle>
+        <rect class="chart-hit" x="46" y="18" width="794" height="208"></rect>
+      </svg>
+      <div id="chartTooltip" class="chart-tooltip" hidden></div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2>Top Holdings</h2>
+    <span class="view-all">View all 37 →</span>
+  </div>
+  <div class="list">
+    <div class="row">
+      <div class="set-name"><span class="swatch" style="background:var(--red)"></span>10294 Titanic <span class="badge new">New / Sealed</span></div>
+      <div class="row-right"><span class="price">$679</span><span class="delta up">▲ $18</span></div>
+    </div>
+    <div class="row">
+      <div class="set-name"><span class="swatch" style="background:var(--blue)"></span>75192 Millennium Falcon <span class="badge used">Used</span></div>
+      <div class="row-right"><span class="price">$742</span><span class="delta down">▼ $9</span></div>
+    </div>
+    <div class="row">
+      <div class="set-name"><span class="swatch" style="background:var(--green)"></span>10281 Bonsai Tree <span class="badge new">New / Sealed</span></div>
+      <div class="row-right"><span class="price">$54</span><span class="delta up">▲ $4</span></div>
+    </div>
+    <div class="row">
+      <div class="set-name"><span class="swatch" style="background:var(--yellow)"></span>21034 London Skyline <span class="badge used">Used</span></div>
+      <div class="row-right"><span class="price">$61</span><span class="delta up">▲ $2</span></div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2>Your Sets</h2>
+    <span class="view-all">Grid view</span>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top"><span class="stud"></span><span class="stud"></span><span class="stud"></span></div>
+      <div class="card-body">
+        <div class="name">10294 Titanic</div>
+        <div class="meta"><span class="price">$679</span><span class="delta up">▲ $18</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="stud"></span><span class="stud"></span><span class="stud"></span></div>
+      <div class="card-body">
+        <div class="name">75192 Falcon</div>
+        <div class="meta"><span class="price">$742</span><span class="delta down">▼ $9</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="stud"></span><span class="stud"></span><span class="stud"></span></div>
+      <div class="card-body">
+        <div class="name">21034 Skyline</div>
+        <div class="meta"><span class="price">$61</span><span class="delta up">▲ $2</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="stud"></span><span class="stud"></span><span class="stud"></span></div>
+      <div class="card-body">
+        <div class="name">10281 Bonsai</div>
+        <div class="meta"><span class="price">$54</span><span class="delta up">▲ $4</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="stud"></span><span class="stud"></span><span class="stud"></span></div>
+      <div class="card-body">
+        <div class="name">42151 UCS X-Wing</div>
+        <div class="meta"><span class="price">$754</span><span class="delta up">▲ $31</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="stud"></span><span class="stud"></span><span class="stud"></span></div>
+      <div class="card-body">
+        <div class="name">10297 Boutique Hotel</div>
+        <div class="meta"><span class="price">$228</span><span class="delta down">▼ $6</span></div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /view-collection -->
+
+  <div id="view-marketplace" class="view" hidden>
+
+    <div class="section-head" style="margin-top:24px;">
+      <h2>Marketplace</h2>
+      <span class="chart-range">Live prices, combined across sources</span>
+    </div>
+    <div class="search-bar"><span class="icon">🔍</span> Search any set by number or name…</div>
+
+    <div class="compare-card">
+      <div class="compare-thumb"><span></span><span></span><span></span></div>
+      <div class="compare-main">
+        <div class="compare-head">
+          <div>
+            <h3>10294 Titanic</h3>
+            <div class="set-num">9,090 pieces · Icons</div>
+          </div>
+        </div>
+        <div class="cond-toggle">
+          <button class="pill active">New / Sealed</button>
+          <button class="pill">Used</button>
+        </div>
+        <div class="source-list">
+          <div class="source-row">
+            <div class="source-name"><span class="source-dot" style="background:#e2792e"></span>eBay <span class="source-meta">42 sold · last 30 days</span></div>
+            <div class="source-price">$671 avg</div>
+          </div>
+          <div class="source-row">
+            <div class="source-name"><span class="source-dot" style="background:#1a5fb4"></span>BrickLink <span class="source-meta">116 listings · new</span></div>
+            <div class="source-price">$684 avg</div>
+          </div>
+          <div class="source-row">
+            <div class="source-name"><span class="source-dot" style="background:#6b6a5c"></span>PriceCharting <span class="source-meta">guide price</span></div>
+            <div class="source-price">$665</div>
+          </div>
+        </div>
+        <div class="best-price">
+          <div>
+            <div class="bp-label">Brick Wallet Price</div>
+            <div class="bp-value">$679</div>
+          </div>
+          <div class="bp-note">Outliers removed, matched to condition &amp; recency</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>Recently Compared</h2>
+      <span class="view-all">View history →</span>
+    </div>
+    <div class="mk-grid">
+      <div class="mk-card"><div class="mk-swatch" style="background:var(--blue)"></div><div><div class="mk-name">75192 Falcon</div><div class="mk-best">Best: <b>$742</b> · BrickLink</div></div></div>
+      <div class="mk-card"><div class="mk-swatch" style="background:var(--green)"></div><div><div class="mk-name">10281 Bonsai</div><div class="mk-best">Best: <b>$54</b> · eBay</div></div></div>
+      <div class="mk-card"><div class="mk-swatch" style="background:var(--yellow)"></div><div><div class="mk-name">21034 Skyline</div><div class="mk-best">Best: <b>$61</b> · eBay</div></div></div>
+      <div class="mk-card"><div class="mk-swatch" style="background:var(--orange)"></div><div><div class="mk-name">42151 X-Wing</div><div class="mk-best">Best: <b>$754</b> · BrickLink</div></div></div>
+    </div>
+
+  </div><!-- /view-marketplace -->
+
+  <div id="view-insights" class="view" hidden>
+
+    <div class="section-head" style="margin-top:24px;">
+      <h2>Insights</h2>
+      <span class="chart-range">How your collection is doing</span>
+    </div>
+
+    <div class="stat-row" style="margin-top:0;">
+      <div class="stat" style="background:var(--green)">
+        <div class="label">Best Performer</div>
+        <div class="value">Titanic</div>
+        <div class="sub">▲ 23.4% since added</div>
+      </div>
+      <div class="stat" style="background:var(--blue)">
+        <div class="label">Avg. Hold Time</div>
+        <div class="value">14 mo</div>
+        <div class="sub">across 37 sets</div>
+      </div>
+      <div class="stat" style="background:var(--orange)">
+        <div class="label">Themes Held</div>
+        <div class="value">6</div>
+        <div class="sub">Star Wars leads at 38%</div>
+      </div>
+    </div>
+
+    <div class="section-head"><h2>Value by Theme</h2></div>
+    <div class="theme-bars">
+      <div class="theme-row">
+        <div class="theme-top"><span class="tname">Star Wars</span><span class="tval">$1,840</span></div>
+        <div class="theme-track"><div class="theme-fill" style="width:100%"></div></div>
+      </div>
+      <div class="theme-row">
+        <div class="theme-top"><span class="tname">Icons</span><span class="tval">$980</span></div>
+        <div class="theme-track"><div class="theme-fill" style="width:53%"></div></div>
+      </div>
+      <div class="theme-row">
+        <div class="theme-top"><span class="tname">Technic</span><span class="tval">$760</span></div>
+        <div class="theme-track"><div class="theme-fill" style="width:41%"></div></div>
+      </div>
+      <div class="theme-row">
+        <div class="theme-top"><span class="tname">Creator Expert</span><span class="tval">$640</span></div>
+        <div class="theme-track"><div class="theme-fill" style="width:35%"></div></div>
+      </div>
+      <div class="theme-row">
+        <div class="theme-top"><span class="tname">City</span><span class="tval">$340</span></div>
+        <div class="theme-track"><div class="theme-fill" style="width:18%"></div></div>
+      </div>
+      <div class="theme-row">
+        <div class="theme-top"><span class="tname">Ideas</span><span class="tval">$252</span></div>
+        <div class="theme-track"><div class="theme-fill" style="width:14%"></div></div>
+      </div>
+    </div>
+
+    <div class="section-head"><h2>New/Sealed vs. Used</h2></div>
+    <div class="split-card">
+      <div class="split-labels"><span class="new-lab">New / Sealed — 68%</span><span class="used-lab">Used — 32%</span></div>
+      <div class="split-bar">
+        <div class="split-new" style="width:68%"></div>
+        <div class="split-used" style="width:32%"></div>
+      </div>
+    </div>
+
+    <div class="section-head"><h2>Top Movers This Week</h2></div>
+    <div class="movers-grid">
+      <div class="list">
+        <div class="row"><div class="set-name"><span class="swatch" style="background:var(--red)"></span>10294 Titanic</div><div class="delta up">▲ 3.9%</div></div>
+        <div class="row"><div class="set-name"><span class="swatch" style="background:var(--orange)"></span>42151 X-Wing</div><div class="delta up">▲ 2.1%</div></div>
+      </div>
+      <div class="list">
+        <div class="row"><div class="set-name"><span class="swatch" style="background:var(--blue)"></span>75192 Falcon</div><div class="delta down">▼ 1.1%</div></div>
+        <div class="row"><div class="set-name"><span class="swatch" style="background:var(--yellow)"></span>10297 Hotel</div><div class="delta down">▼ 0.8%</div></div>
+      </div>
+    </div>
+
+  </div><!-- /view-insights -->
+
+  <footer>
+    Full concept mockup for the Brick &amp; Stud direction — the hero uses a real tessellated brick pattern (drawn as an SVG texture, not a stock photo), and the dashboard, marketplace, and insights views all carry the same chunky, drop-shadowed "off the baseplate" card style throughout.
+  </footer>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
