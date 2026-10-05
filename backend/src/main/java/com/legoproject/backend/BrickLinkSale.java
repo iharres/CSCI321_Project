@@ -38,7 +38,7 @@ public class BrickLinkSale {
         return buyerCountry;
     }
 
-    public void setBuyerCountry(String buyerCounty){
+    public void setBuyerCountry(String buyerCountry){
         this.buyerCountry = buyerCountry;
     }
 
@@ -46,7 +46,7 @@ public class BrickLinkSale {
         return dateOrdered;
     }
 
-    public void setDateOrdered(){
+    public void setDateOrdered(String dateOrdered){
         this.dateOrdered = dateOrdered;
     }
 

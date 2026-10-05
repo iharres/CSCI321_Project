@@ -22,7 +22,7 @@ public class BrickLinkPriceGuide {
         this.minPrice = minPrice;
     }
 
-    public double maxPrice(){
+    public double getMaxPrice(){
         return maxPrice;
     }
     public void setMaxPrice(double maxPrice){
