@@ -47,6 +47,7 @@ public class BrickLinkService {
         service.signRequest(accessToken, request);
 
         String response = service.execute(request).getBody();
+        System.out.println(response);
 
         JsonNode data = objectMapper.readTree(response).get("data");
 
@@ -76,6 +77,44 @@ public class BrickLinkService {
         priceGuide.setTotalQuantity(
                 data.get("total_quantity").asInt()
         );
+
+        // Convert each individual BrickLink sale into a BrickLinkSale object
+        java.util.List<BrickLinkSale> sales = new java.util.ArrayList<>();
+
+        JsonNode priceDetails = data.get("price_detail");
+
+        if (priceDetails != null && priceDetails.isArray()) {
+
+            for (JsonNode saleData : priceDetails) {
+
+                BrickLinkSale sale = new BrickLinkSale();
+
+                sale.setUnitPrice(
+                        saleData.get("unit_price").asDouble()
+                );
+
+                sale.setQuantity(
+                        saleData.get("quantity").asInt()
+                );
+
+                sale.setSellerCountry(
+                        saleData.get("seller_country_code").asText()
+                );
+
+                sale.setBuyerCountry(
+                        saleData.get("buyer_country_code").asText()
+                );
+
+                sale.setDateOrdered(
+                        saleData.get("date_ordered").asText()
+                );
+
+                sales.add(sale);
+            }
+        }
+
+        priceGuide.setSales(sales);
+
 
         return priceGuide;
     }

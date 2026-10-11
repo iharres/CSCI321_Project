@@ -8,10 +8,13 @@ public class LegoController {
 
     private final PortfolioService portfolioService;
     private final BrickLinkService brickLinkService;
+    private final PricingService pricingService;
 
-    public LegoController(PortfolioService portfolioService, BrickLinkService brickLinkService) {
+
+    public LegoController(PortfolioService portfolioService, BrickLinkService brickLinkService, PricingService pricingService) {
         this.portfolioService = portfolioService;
         this.brickLinkService = brickLinkService;
+        this.pricingService = pricingService;
     }
 
     @GetMapping("/api/portfolio")
@@ -38,6 +41,18 @@ public class LegoController {
     public BrickLinkPriceGuide getBrickLinkPrice(@PathVariable String setNumber) throws Exception {
         return brickLinkService.getPriceGuide(setNumber);
     }
+
+    @GetMapping("/api/bricklink/price/{setNumber}/median")
+    public double getMedianPrice(@PathVariable String setNumber) throws Exception {
+        BrickLinkPriceGuide priceGuide = brickLinkService.getPriceGuide(setNumber);
+        return pricingService.calculateMedianPrice(priceGuide);
+    }
+    @GetMapping("/api/bricklink/price/{setNumber}/average")
+    public double getAveragePrice(@PathVariable String setNumber) throws Exception {
+        BrickLinkPriceGuide priceGuide = brickLinkService.getPriceGuide(setNumber);
+        return pricingService.calculateAverageWithoutOutliers(priceGuide);
+    }
+
 }
 
 
