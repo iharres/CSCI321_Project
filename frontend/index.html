@@ -3,42 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>LEGO Portfolio</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <h1>LEGO Portfolio</h1>
+<h1>LEGO Portfolio</h1>
 
+<section>
+    <h2>Add LEGO Set</h2>
+
+    <input type="text" id="set-number" placeholder="Set Number">
+
+    <input type="number" id="purchase-price" placeholder="Purchase Price">
+
+    <button id="add-set-button">Add Set</button>
+</section>
 
 <section class="summary">
 
     <h2>Portfolio Summary</h2>
 
-    <p id="total-cost">Total Cost: Loading...</p>
-    <p id="current-value">Current Value: Loading...</p>
-    <p id="profit">Profit: Loading...</p>
+    <p id="total-cost">Total Cost: $0</p>
+
+    <p id="current-value">Current Value: $0</p>
+
+    <p id="profit">Profit: $0</p>
 
 </section>
 
+<section>
 
+    <h2>My Sets</h2>
 
-    <section>
+    <div id="lego-container"></div>
 
-        <h2>My Sets</h2>
+</section>
 
-        <!-- JavaScript will insert LEGO sets here -->
-        <div id="lego-container">
-
-        </div>
-
-    </section>
-
-
-    <script src="script.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>
