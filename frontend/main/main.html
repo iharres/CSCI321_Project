@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brick Wallet</title>
+<link rel="stylesheet" href="style.css">
+
+  <style>
+    .portfolio-status { margin: 12px 0; font-size: 0.9rem; color: var(--muted, #777); }
+    .portfolio-status.error { color: #b42318; }
+    .portfolio-status.success { color: var(--green, #287a45); }
+    .portfolio-empty { padding: 16px 0; color: var(--muted, #777); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Top navigation bar: logo, page links, and the account menu on the right. -->
+  <nav>
+    <div class="logo"><span class="mark"></span> Brick Wallet</div>
+    <div class="nav-links">
+      <a href="#" class="active" data-view="collection">Collection</a>
+      <a href="#" data-view="marketplace">Marketplace</a>
+      <a href="#" data-view="insights">Insights</a>
+    </div>
+    <div class="nav-right">
+      <button class="nav-cta">+ Add a Set</button>
+      <!-- Account menu: clicking the avatar button opens the dropdown below it (handled in script.js). -->
+      <div class="account" id="accountMenuRoot">
+        <button class="account-btn" id="accountBtn" aria-haspopup="true" aria-expanded="false">
+          <span class="avatar"></span>
+          <span class="account-name">Manny P.</span>
+          <span class="account-caret">▾</span>
+        </button>
+        <div class="account-menu" id="accountMenu" hidden>
+          <div class="account-menu-head">
+            <span class="avatar"></span>
+            <div class="who">
+              <div class="who-name">Manny P.</div>
+              <div class="who-handle">@goodsreloaded</div>
+            </div>
+          </div>
+          <hr>
+          <a href="#"><span class="mi">👤</span> Your Profile</a>
+          <a href="#"><span class="mi">🧱</span> Collection Settings</a>
+          <a href="#"><span class="mi">🔔</span> Notifications</a>
+          <hr>
+          <a href="#" class="danger"><span class="mi">⏻</span> Sign out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Collection page: the default view showing the user's own set holdings. ===== -->
+  <div id="view-collection" class="view">
+
+  <!-- Hero banner with the brick-pattern background, title, tagline, and sign-up button. -->
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">Your Collection, Valued Live</span>
+      <h1>Brick Wallet</h1>
+      <p>Track your LEGO collection like a stock portfolio — real market pricing, sorted by condition, updated automatically.</p>
+      <button class="hero-cta"><span class="stud-pair"><span></span><span></span></span> Start tracking free</button>
+    </div>
+  </div>
+
+  <p id="portfolio-status" class="portfolio-status" role="status" aria-live="polite">Connecting to your portfolio…</p>
+
+  <!-- Three summary tiles: total value, how many sets are tracked, and overall gain. -->
+  <div class="stat-row">
+    <div class="stat">
+      <div class="label">Portfolio Value</div>
+      <div class="value" id="portfolio-value">—</div>
+      <div class="sub" id="portfolio-cost">Loading total cost…</div>
+    </div>
+    <div class="stat">
+      <div class="label">Sets Tracked</div>
+      <div class="value" id="portfolio-set-count">—</div>
+      <div class="sub">sets in your portfolio</div>
+    </div>
+    <div class="stat">
+      <div class="label">All-Time Gain</div>
+      <div class="value" id="portfolio-return">—</div>
+      <div class="sub" id="portfolio-profit">Loading profit/loss…</div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2>Top Holdings</h2>
+    <span class="view-all" id="portfolio-view-all">View all →</span>
+  </div>
+  <!-- List of the user's top-value sets, each with a condition badge and today's price change. -->
+  <div class="list" id="portfolio-holdings"></div>
+
+  <div class="section-head">
+    <h2>Your Sets</h2>
+    <span class="view-all">Grid view</span>
+  </div>
+  <!-- Grid view of every set, shown as brick-styled cards. -->
+  <div class="grid" id="portfolio-grid"></div>
+
+    </div><!-- /view-collection -->
+
+  <!-- ===== Marketplace page: hidden by default, shown when the user clicks "Marketplace" in the nav. ===== -->
+  <div id="view-marketplace" class="view" hidden>
+
+    <div class="section-head" style="margin-top:24px;">
+      <h2>Marketplace</h2>
+      <span class="chart-range">Live prices, combined across sources</span>
+    </div>
+    <div class="search-bar"><span class="icon">🔍</span> Search any set by number or name…</div>
+
+    <!-- Price-comparison card for one set: shows each source's price, then Brick Wallet's own combined estimate. -->
+    <div class="compare-card">
+      <div class="compare-thumb"><span></span><span></span><span></span></div>
+      <div class="compare-main">
+        <div class="compare-head">
+          <div>
+            <h3>10294 Titanic</h3>
+            <div class="set-num">9,090 pieces · Icons</div>
+          </div>
+        </div>
+        <div class="cond-toggle">
+          <button class="pill active">New / Sealed</button>
+          <button class="pill">Used</button>
+        </div>
+        <div class="source-list">
+          <div class="source-row">
+            <div class="source-name"><span class="source-dot" style="background:#e2792e"></span>eBay <span class="source-meta">42 sold · last 30 days</span></div>
+            <div class="source-price">$671 avg</div>
+          </div>
+          <div class="source-row">
+            <div class="source-name"><span class="source-dot" style="background:#1a5fb4"></span>BrickLink <span class="source-meta">116 listings · new</span></div>
+            <div class="source-price">$684 avg</div>
+          </div>
+          <div class="source-row">
+            <div class="source-name"><span class="source-dot" style="background:#6b6a5c"></span>PriceCharting <span class="source-meta">guide price</span></div>
+            <div class="source-price">$665</div>
+          </div>
+        </div>
+        <div class="best-price">
+          <div>
+            <div class="bp-label">Brick Wallet Price</div>
+            <div class="bp-value">$679</div>
+          </div>
+          <div class="bp-note">Outliers removed, matched to condition &amp; recency</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>Recently Compared</h2>
+      <span class="view-all">View history →</span>
+    </div>
+    <!-- Small cards for other sets the user has recently looked up prices for. -->
+    <div class="mk-grid">
+      <div class="mk-card"><div class="mk-swatch" style="background:var(--blue)"></div><div><div class="mk-name">75192 Falcon</div><div class="mk-best">Best: <b>$742</b> · BrickLink</div></div></div>
+      <div class="mk-card"><div class="mk-swatch" style="background:var(--green)"></div><div><div class="mk-name">10281 Bonsai</div><div class="mk-best">Best: <b>$54</b> · eBay</div></div></div>
+      <div class="mk-card"><div class="mk-swatch" style="background:var(--yellow)"></div><div><div class="mk-name">21034 Skyline</div><div class="mk-best">Best: <b>$61</b> · eBay</div></div></div>
+      <div class="mk-card"><div class="mk-swatch" style="background:var(--orange)"></div><div><div class="mk-name">42151 X-Wing</div><div class="mk-best">Best: <b>$754</b> · BrickLink</div></div></div>
+    </div>
+
+  </div><!-- /view-marketplace -->
+
+  <!-- ===== Insights page: hidden by default, shown when the user clicks "Insights" in the nav. ===== -->
+  <div id="view-insights" class="view" hidden>
+
+    <div class="section-head" style="margin-top:24px;">
+      <h2>Insights</h2>
+      <span class="chart-range">How your collection is doing</span>
+    </div>
+
+    <!-- Three headline stats: best-performing set, average hold time, and how many themes are represented. -->
+    <div class="stat-row" style="margin-top:0;">
+      <div class="stat" style="background:var(--green)">
+        <div class="label">Best Performer</div>
+        <div class="value">Titanic</div>
+        <div class="sub">▲ 23.4% since added</div>
+      </div>
+      <div class="stat" style="background:var(--blue)">
+        <div class="label">Avg. Hold Time</div>
+        <div class="value">14 mo</div>
+        <div class="sub">across 37 sets</div>
+      </div>
+      <div class="stat" style="background:var(--orange)">
+        <div class="label">Themes Held</div>
+        <div class="value">6</div>
+        <div class="sub">Star Wars leads at 38%</div>
+      </div>
+    </div>
+
+    <!-- Horizontal bars showing how the portfolio's value breaks down by LEGO theme. -->
+    <div class="section-head"><h2>Value by Theme</h2></div>
+    <div class="theme-bars">
+      <div class="theme-row">
+        <div class="theme-top"><span class="tname">Star Wars</span><span class="tval">$1,840</span></div>
+        <div class="theme-track"><div class="theme-fill" style="width:100%"></div></div>
+      </div>
+      <div class="theme-row">
+        <div class="theme-top"><span class="tname">Icons</span><span class="tval">$980</span></div>
+        <div class="theme-track"><div class="theme-fill" style="width:53%"></div></div>
+      </div>
+      <div class="theme-row">
+        <div class="theme-top"><span class="tname">Technic</span><span class="tval">$760</span></div>
+        <div class="theme-track"><div class="theme-fill" style="width:41%"></div></div>
+      </div>
+      <div class="theme-row">
+        <div class="theme-top"><span class="tname">Creator Expert</span><span class="tval">$640</span></div>
+        <div class="theme-track"><div class="theme-fill" style="width:35%"></div></div>
+      </div>
+      <div class="theme-row">
+        <div class="theme-top"><span class="tname">City</span><span class="tval">$340</span></div>
+        <div class="theme-track"><div class="theme-fill" style="width:18%"></div></div>
+      </div>
+      <div class="theme-row">
+        <div class="theme-top"><span class="tname">Ideas</span><span class="tval">$252</span></div>
+        <div class="theme-track"><div class="theme-fill" style="width:14%"></div></div>
+      </div>
+    </div>
+
+    <!-- A two-segment bar showing what share of the collection is New/Sealed versus Used. -->
+    <div class="section-head"><h2>New/Sealed vs. Used</h2></div>
+    <div class="split-card">
+      <div class="split-labels"><span class="new-lab">New / Sealed — 68%</span><span class="used-lab">Used — 32%</span></div>
+      <div class="split-bar">
+        <div class="split-new" style="width:68%"></div>
+        <div class="split-used" style="width:32%"></div>
+      </div>
+    </div>
+
+    <!-- Two side-by-side lists: sets that gained value this week and sets that lost value. -->
+    <div class="section-head"><h2>Top Movers This Week</h2></div>
+    <div class="movers-grid">
+      <div class="list">
+        <div class="row"><div class="set-name"><span class="swatch" style="background:var(--red)"></span>10294 Titanic</div><div class="delta up">▲ 3.9%</div></div>
+        <div class="row"><div class="set-name"><span class="swatch" style="background:var(--orange)"></span>42151 X-Wing</div><div class="delta up">▲ 2.1%</div></div>
+      </div>
+      <div class="list">
+        <div class="row"><div class="set-name"><span class="swatch" style="background:var(--blue)"></span>75192 Falcon</div><div class="delta down">▼ 1.1%</div></div>
+        <div class="row"><div class="set-name"><span class="swatch" style="background:var(--yellow)"></span>10297 Hotel</div><div class="delta down">▼ 0.8%</div></div>
+      </div>
+    </div>
+
+  </div><!-- /view-insights -->
+
+  <!-- Small print explaining the concept, shown at the bottom of every page. -->
+  <footer>
+    This frontend is a work in progress. If there are problems, Sorry! I'm doing my best! -WCS
+  </footer>
+
+</div>
+
+<!-- All the interactive behavior (chart hover, page switching, account menu) lives in script.js. -->
+<script src="script.js"></script>
+</body>
+</html>
