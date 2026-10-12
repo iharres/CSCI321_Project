@@ -118,4 +118,15 @@ public class BrickLinkService {
 
         return priceGuide;
     }
+
+    public String getSetName(String setNumber) throws Exception {
+        String url = "https://api.bricklink.com/api/store/v1/items/SET/" + setNumber + "-1";
+        OAuthRequest request = new OAuthRequest(Verb.GET, url);
+
+        service.signRequest(accessToken, request);
+        String response = service.execute(request).getBody();
+        JsonNode data = objectMapper.readTree(response).get("data");
+
+        return data.get("name").asText();
+    }
 }

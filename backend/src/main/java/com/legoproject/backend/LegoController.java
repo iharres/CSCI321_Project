@@ -21,9 +21,27 @@ public class LegoController {
     public Portfolio getPortfolio() {
         return portfolioService.getPortfolio();
     }
-
     @PostMapping("/api/sets")
-    public void addSet(@RequestBody LegoSet set) {
+    public void addSet(@RequestBody AddSetRequest request) throws Exception {
+
+        String setNumber = request.getSetNumber();
+        double purchasePrice = request.getPurchasePrice();
+
+        String name = brickLinkService.getSetName(setNumber);
+
+        BrickLinkPriceGuide priceGuide =
+                brickLinkService.getPriceGuide(setNumber);
+
+        double estimatedValue =
+                pricingService.calculateAverageWithoutOutliers(priceGuide);
+
+        LegoSet set = new LegoSet(
+                setNumber,
+                name,
+                purchasePrice,
+                estimatedValue
+        );
+
         portfolioService.addSet(set);
     }
 
