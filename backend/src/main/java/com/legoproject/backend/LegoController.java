@@ -39,7 +39,7 @@ public class LegoController {
                 purchasePrice,
                 estimatedValue
         );
-
+        set.setCondition(request.getCondition());
         portfolioService.addSet(set);
     }
 
