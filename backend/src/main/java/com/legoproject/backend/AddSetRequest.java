@@ -4,6 +4,7 @@ public class AddSetRequest {
 
     private String setNumber;
     private double purchasePrice;
+    private String condition;
 
     public AddSetRequest() {
     }
@@ -23,4 +24,13 @@ public class AddSetRequest {
     public void setPurchasePrice(double purchasePrice) {
         this.purchasePrice = purchasePrice;
     }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition){
+        this.condition = condition;
+    }
+
 }

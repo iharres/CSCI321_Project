@@ -6,6 +6,7 @@ public class LegoSet {
     private String name;
     private double purchasePrice;
     private double currentValue;
+    private String condition;
 
     public LegoSet(){
 
@@ -52,6 +53,14 @@ public class LegoSet {
 
     public void setPurchasePrice(double purchasePrice){
         this.purchasePrice = purchasePrice;
+    }
+
+    public String getCondition(){
+        return condition;
+    }
+
+    public void setCondition(String condition){
+        this.condition = condition;
     }
 
 }

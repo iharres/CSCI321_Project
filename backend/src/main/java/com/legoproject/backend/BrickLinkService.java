@@ -16,6 +16,9 @@ public class BrickLinkService {
     private final OAuth1AccessToken accessToken;
     private final ObjectMapper objectMapper;
 
+    public BrickLinkPriceGuide getPriceGuide(String setNumber) throws Exception {
+        return getPriceGuide(setNumber, "NEW");
+    }
     public BrickLinkService() {
         // Get BrickLink credentials from environment variables
         String consumerKey = System.getenv("BRICKLINK_CONSUMER_KEY");
@@ -34,20 +37,29 @@ public class BrickLinkService {
         objectMapper = new ObjectMapper();
     }
 
-    public BrickLinkPriceGuide getPriceGuide(String setNumber) throws Exception {
+    public BrickLinkPriceGuide getPriceGuide(String setNumber, String condition) throws Exception {
+
+        String brickLinkCondition;
+
+        if (condition.equals("NEW")) {
+            brickLinkCondition = "N";
+        } else {
+            brickLinkCondition = "U";
+        }
 
         String url =
                 "https://api.bricklink.com/api/store/v1/items/SET/"
                         + setNumber
-                        + "-1/price?guide_type=sold";
-        // Create a GET request to BrickLink
+                        + "-1/price?guide_type=sold&new_or_used="
+                        + brickLinkCondition;
+
+        // Create a get request to BrickLink
         OAuthRequest request = new OAuthRequest(Verb.GET, url);
 
-        // Add our OAuth credentials to the request
+        // Add our credentials to the request
         service.signRequest(accessToken, request);
 
         String response = service.execute(request).getBody();
-        System.out.println(response);
 
         JsonNode data = objectMapper.readTree(response).get("data");
 
@@ -89,25 +101,11 @@ public class BrickLinkService {
 
                 BrickLinkSale sale = new BrickLinkSale();
 
-                sale.setUnitPrice(
-                        saleData.get("unit_price").asDouble()
-                );
-
-                sale.setQuantity(
-                        saleData.get("quantity").asInt()
-                );
-
-                sale.setSellerCountry(
-                        saleData.get("seller_country_code").asText()
-                );
-
-                sale.setBuyerCountry(
-                        saleData.get("buyer_country_code").asText()
-                );
-
-                sale.setDateOrdered(
-                        saleData.get("date_ordered").asText()
-                );
+                sale.setUnitPrice(saleData.get("unit_price").asDouble());
+                sale.setQuantity(saleData.get("quantity").asInt());
+                sale.setSellerCountry(saleData.get("seller_country_code").asText());
+                sale.setBuyerCountry(saleData.get("buyer_country_code").asText());
+                sale.setDateOrdered(saleData.get("date_ordered").asText());
 
                 sales.add(sale);
             }

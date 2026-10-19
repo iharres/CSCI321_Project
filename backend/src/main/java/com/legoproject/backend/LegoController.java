@@ -29,11 +29,9 @@ public class LegoController {
 
         String name = brickLinkService.getSetName(setNumber);
 
-        BrickLinkPriceGuide priceGuide =
-                brickLinkService.getPriceGuide(setNumber);
+        BrickLinkPriceGuide priceGuide = brickLinkService.getPriceGuide(setNumber, request.getCondition());
 
-        double estimatedValue =
-                pricingService.calculateAverageWithoutOutliers(priceGuide);
+        double estimatedValue = pricingService.calculateAverageWithoutOutliers(priceGuide);
 
         LegoSet set = new LegoSet(
                 setNumber,
