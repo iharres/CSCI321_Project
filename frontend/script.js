@@ -25,6 +25,8 @@ fetch("http://localhost:8080/api/portfolio")
 
         const container = document.getElementById("lego-container");
 
+        container.innerHTML = "";
+
 
         portfolio.sets.forEach(set => {
 
@@ -33,17 +35,17 @@ fetch("http://localhost:8080/api/portfolio")
             legoCard.className = "lego-set";
 
 
-            legoCard.innerHTML = `
-                <h3>${set.name}</h3>
-                <p>Set #${set.setNumber}</p>
-                <p>Purchase Price: $${set.purchasePrice.toFixed(2)}</p>
-                <p>Profit: $${set.profit.toFixed(2)}</p>
-                <p id="estimated-${set.setNumber}">
-                    Estimated Value: Loading...
-                </p>
+           legoCard.innerHTML = `
+              <h3>${set.name}</h3>
+              <p>Set #${set.setNumber}</p>
+              <p>Condition: ${set.condition === "NEW" ? "New / Sealed" : "Built / Used"}</p>
+              <p>Purchase Price: $${set.purchasePrice.toFixed(2)}</p>
+              <p>Estimated Value: $${set.currentValue.toFixed(2)}</p>
+              <p>Profit: $${set.profit.toFixed(2)}</p>
+
                 <button class="remove-button" data-set-number="${set.setNumber}">
-                    Remove
-                </button>
+                  Remove
+              </button>
             `;
 
 
@@ -74,23 +76,6 @@ fetch("http://localhost:8080/api/portfolio")
 
             });
 
-
-            // Get estimated value from BrickLink
-
-            fetch(`http://localhost:8080/api/bricklink/price/${set.setNumber}/average`)
-                .then(response => response.json())
-                .then(price => {
-
-                    document.getElementById(`estimated-${set.setNumber}`).innerHTML =
-                        "Estimated Value: $" + price.toFixed(2);
-
-                })
-                .catch(error => {
-
-                    console.error("Error loading BrickLink price:", error);
-
-                });
-
         });
 
     })
@@ -107,13 +92,18 @@ document.getElementById("add-set-button").addEventListener("click", () => {
 
     const setNumber = document.getElementById("set-number").value;
     const purchasePrice = document.getElementById("purchase-price").value;
+    const condition = document.getElementById("condition").value;
 
+    const button = document.getElementById("add-set-button");
+
+    button.innerHTML = "Adding...";
+    button.disabled = true;
 
     const newSet = {
         setNumber: setNumber,
-        purchasePrice: Number(purchasePrice)
+        purchasePrice: Number(purchasePrice),
+        condition: condition
     };
-
 
     fetch("http://localhost:8080/api/sets", {
         method: "POST",
@@ -134,6 +124,9 @@ document.getElementById("add-set-button").addEventListener("click", () => {
         .catch(error => {
 
             console.error("Error adding LEGO set:", error);
+
+            button.innerHTML = "Add Set";
+            button.disabled = false;
 
         });
 
