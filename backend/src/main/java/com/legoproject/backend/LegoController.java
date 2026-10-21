@@ -10,8 +10,11 @@ public class LegoController {
     private final BrickLinkService brickLinkService;
     private final PricingService pricingService;
 
+    public LegoController(
+            PortfolioService portfolioService,
+            BrickLinkService brickLinkService,
+            PricingService pricingService) {
 
-    public LegoController(PortfolioService portfolioService, BrickLinkService brickLinkService, PricingService pricingService) {
         this.portfolioService = portfolioService;
         this.brickLinkService = brickLinkService;
         this.pricingService = pricingService;
@@ -21,17 +24,21 @@ public class LegoController {
     public Portfolio getPortfolio() {
         return portfolioService.getPortfolio();
     }
+
     @PostMapping("/api/sets")
     public void addSet(@RequestBody AddSetRequest request) throws Exception {
 
         String setNumber = request.getSetNumber();
         double purchasePrice = request.getPurchasePrice();
+        String condition = request.getCondition();
 
         String name = brickLinkService.getSetName(setNumber);
 
-        BrickLinkPriceGuide priceGuide = brickLinkService.getPriceGuide(setNumber, request.getCondition());
+        BrickLinkPriceGuide priceGuide =
+                brickLinkService.getPriceGuide(setNumber, condition);
 
-        double estimatedValue = pricingService.calculateAverageWithoutOutliers(priceGuide);
+        double estimatedValue =
+                pricingService.calculateAverageWithoutOutliers(priceGuide);
 
         LegoSet set = new LegoSet(
                 setNumber,
@@ -39,36 +46,50 @@ public class LegoController {
                 purchasePrice,
                 estimatedValue
         );
-        set.setCondition(request.getCondition());
+
+        set.setCondition(condition);
+
         portfolioService.addSet(set);
     }
 
-    @DeleteMapping("/api/sets/{setNumber}")
-    public void deleteSet(@PathVariable String setNumber) {
-        portfolioService.removeSet(setNumber);
+    @DeleteMapping("/api/sets/{id}")
+    public void deleteSet(@PathVariable Long id) {
+        portfolioService.removeSet(id);
     }
 
     @PutMapping("/api/sets/{setNumber}")
-    public void updateSet(@PathVariable String setNumber, @RequestBody LegoSet updatedSet) {
+    public void updateSet(
+            @PathVariable String setNumber,
+            @RequestBody LegoSet updatedSet) {
+
         portfolioService.updateSet(setNumber, updatedSet);
     }
 
     @GetMapping("/api/bricklink/price/{setNumber}")
-    public BrickLinkPriceGuide getBrickLinkPrice(@PathVariable String setNumber) throws Exception {
-        return brickLinkService.getPriceGuide(setNumber);
+    public BrickLinkPriceGuide getBrickLinkPrice(
+            @PathVariable String setNumber) throws Exception {
+
+        return brickLinkService.getPriceGuide(setNumber, "NEW");
     }
 
     @GetMapping("/api/bricklink/price/{setNumber}/median")
-    public double getMedianPrice(@PathVariable String setNumber) throws Exception {
-        BrickLinkPriceGuide priceGuide = brickLinkService.getPriceGuide(setNumber);
+    public double getMedianPrice(
+            @PathVariable String setNumber) throws Exception {
+
+        BrickLinkPriceGuide priceGuide =
+                brickLinkService.getPriceGuide(setNumber, "NEW");
+
         return pricingService.calculateMedianPrice(priceGuide);
     }
+
     @GetMapping("/api/bricklink/price/{setNumber}/average")
-    public double getAveragePrice(@PathVariable String setNumber) throws Exception {
-        BrickLinkPriceGuide priceGuide = brickLinkService.getPriceGuide(setNumber);
+    public double getAveragePrice(
+            @PathVariable String setNumber) throws Exception {
+
+        BrickLinkPriceGuide priceGuide =
+                brickLinkService.getPriceGuide(setNumber, "NEW");
+
         return pricingService.calculateAverageWithoutOutliers(priceGuide);
     }
-
 }
-
 

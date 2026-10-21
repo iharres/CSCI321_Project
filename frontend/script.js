@@ -42,9 +42,9 @@ fetch("http://localhost:8080/api/portfolio")
               <p>Estimated Value: $${set.currentValue.toFixed(2)}</p>
               <p>Profit: $${set.profit.toFixed(2)}</p>
 
-                <button class="remove-button" data-set-number="${set.setNumber}">
+               <button class="remove-button" data-id="${set.id}">
                   Remove
-              </button>
+                </button>
             `;
 
 
@@ -55,7 +55,7 @@ fetch("http://localhost:8080/api/portfolio")
 
             legoCard.querySelector(".remove-button").addEventListener("click", () => {
 
-                fetch(`http://localhost:8080/api/sets/${set.setNumber}`, {
+                fetch(`http://localhost:8080/api/sets/${set.id}`, {
                     method: "DELETE"
                 })
                     .then(response => {
