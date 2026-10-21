@@ -270,6 +270,75 @@
         if (grid) grid.innerHTML = '';
       });
   }
+  
+  // ===== Add a set to the portfolio =====
+  var addSetButton = document.getElementById('add-set-button');
+  var addSetDialog = document.getElementById('add-set-dialog');
+  var addSetForm = document.getElementById('add-set-form');
+  var cancelAddSet = document.getElementById('cancel-add-set');
+  var addSetMessage = document.getElementById('add-set-message');
+  var submitAddSet = document.getElementById('submit-add-set');
+
+  // Open the form when the user clicks "+ Add a Set".
+  if (addSetButton && addSetDialog) {
+    addSetButton.addEventListener('click', function () {
+      addSetMessage.textContent = '';
+      addSetDialog.showModal();
+    });
+  }
+
+  // Close the form when Cancel is clicked.
+  if (cancelAddSet && addSetDialog) {
+    cancelAddSet.addEventListener('click', function () {
+      addSetDialog.close();
+    });
+  }
+
+  // Send the new set to Spring Boot.
+  if (addSetForm) {
+    addSetForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      var formData = new FormData(addSetForm);
+
+      var newSet = {
+        setNumber: formData.get('setNumber').trim(),
+        purchasePrice: Number(formData.get('purchasePrice')),
+        condition: formData.get('condition'),
+      };
+
+      addSetMessage.textContent = 'Adding set…';
+      submitAddSet.disabled = true;
+
+      fetch(API_BASE_URL + '/api/sets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newSet)
+      })
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error('The API returned HTTP ' + response.status + '.');
+          }
+
+          // The backend may return an empty response, so don't parse JSON here.
+          addSetDialog.close();
+          addSetForm.reset();
+
+          setStatus('Set added! Refreshing your portfolio…');
+          loadPortfolio();
+        })
+        .catch(function (error) {
+          addSetMessage.textContent =
+            'Could not add the set. ' + error.message;
+        })
+        .finally(function () {
+          submitAddSet.disabled = false;
+        });
+    });
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', loadPortfolio);
   } else {

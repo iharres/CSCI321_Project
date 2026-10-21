@@ -26,7 +26,8 @@
       <a href="#" data-view="insights">Insights</a>
     </div>
     <div class="nav-right">
-      <button class="nav-cta">+ Add a Set</button>
+      <button id="add-set-button">+ Add a Set</button>
+      
       <!-- Account menu: clicking the avatar button opens the dropdown below it (handled in script.js). -->
       <div class="account" id="accountMenuRoot">
         <button class="account-btn" id="accountBtn" aria-haspopup="true" aria-expanded="false">
@@ -244,6 +245,47 @@
     </div>
 
   </div><!-- /view-insights -->
+
+  <!-- Add a LEGO set -->
+  <dialog id="add-set-dialog">
+    <h2>Add a LEGO Set</h2>
+    <p>Enter the details of the set you want to track.</p>
+
+    <form id="add-set-form">
+      <label for="new-set-number">LEGO Set Number</label>
+      <input
+        id="new-set-number"
+        name="setNumber"
+        type="text"
+        placeholder="e.g. 10294"
+        required
+      />
+
+      <label for="new-set-purchase">Purchase Price ($)</label>
+      <input
+        id="new-set-purchase"
+        name="purchasePrice"
+        type="number"
+        min="0"
+        step="0.01"
+        placeholder="500.00"
+        required
+      />
+  
+      <label for="condition">Condition (New/Used)</label>
+        <select id="condition" name="condition" required>
+          <option value="New">New / Sealed</option>
+          <option value="Used">Used / Built</option>
+        </select>
+
+      <p id="add-set-message" role="status" aria-live="polite"></p>
+
+      <div class="add-set-actions">
+        <button type="button" id="cancel-add-set">Cancel</button>
+        <button type="submit" id="submit-add-set">Add Set</button>
+      </div>
+    </form>
+  </dialog>
 
   <!-- Small print explaining the concept, shown at the bottom of every page. -->
   <footer>
