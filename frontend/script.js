@@ -38,8 +38,7 @@ fetch("http://localhost:8080/api/portfolio")
            legoCard.innerHTML = `
               <h3>${set.name}</h3>
               <p>Set #${set.setNumber}</p>
-              <p>Condition: ${set.condition === "NEW" ? "New / Sealed" : "Built / Used"}</p>
-              <p>Purchase Price: $${set.purchasePrice.toFixed(2)}</p>
+              <p>Condition: ${set.condition === "NEW" || set.condition === "N" ? "New / Sealed" : "Built / Used"}</p>              <p>Purchase Price: $${set.purchasePrice.toFixed(2)}</p>
               <p>Estimated Value: $${set.currentValue.toFixed(2)}</p>
               <p>Profit: $${set.profit.toFixed(2)}</p>
 
