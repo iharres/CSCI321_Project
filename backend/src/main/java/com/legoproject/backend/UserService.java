@@ -1,6 +1,7 @@
 package com.legoproject.backend;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -8,9 +9,14 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
+
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User register(String username, String password) {
@@ -22,7 +28,9 @@ public class UserService {
             );
         }
 
-        User user = new User(username, password);
+        String hashedPassword = passwordEncoder.encode(password);
+
+        User user = new User(username, hashedPassword);
 
         return userRepository.save(user);
     }
@@ -37,7 +45,7 @@ public class UserService {
                         )
                 );
 
-        if (!user.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Invalid username or password"
