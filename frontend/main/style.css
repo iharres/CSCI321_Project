@@ -63,20 +63,32 @@ nav{
 .nav-links a{ color:var(--ink); text-decoration:none; opacity:.75; }
 /* Underlines whichever nav link is currently the active page. */
 .nav-links a.active{ opacity:1; border-bottom:3px solid var(--yellow); padding-bottom:3px; }
-/* Stylizes the "+ Add a Set" button */
-#add-set-button{
+
+/* Stylizes the buttons */
+#add-set-button, #cancel-add-set, #submit-add-set{
   font-family:'Work Sans', sans-serif; font-weight:700; font-size:13px;
   color:#fff; background:var(--blue); border:none; border-radius:8px;
   padding: 10px 16px; box-shadow: 0 4px 0 rgba(0,0,0,0.25); cursor:pointer;
   transition: background-color 0.3s ease;
 }
-/* Makes the Add Set Button darken when you hover over it */
-#add-set-button:hover{
+/* Makes the buttons darken when you hover over them */
+#add-set-button:hover, #cancel-add-set:hover, #submit-add-set:hover{
   background-color: #07048b;
 }
 
+
+
 /* Groups the "Add a Set" button and the account menu together on the right side of the nav. */
 .nav-right{ display:flex; align-items:center; gap:12px; }
+
+
+#add-set-dialog{
+  /*background-image: url("bricks-pattern.svg");
+  background-size: cover;
+  filter: drop-shadow(0px 10px 20px rgba(0, 0, 0, 0.3));*/
+}
+
+
 
 /* ---------- account manager ---------- */
 /* Wrapper for the avatar button and its dropdown, positioned so the dropdown can anchor to it. */
