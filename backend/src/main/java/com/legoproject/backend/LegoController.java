@@ -21,12 +21,14 @@ public class LegoController {
     }
 
     @GetMapping("/api/portfolio")
-    public Portfolio getPortfolio() {
-        return portfolioService.getPortfolio();
+    public Portfolio getPortfolio(@RequestParam Long userId) {
+        return portfolioService.getPortfolio(userId);
     }
 
     @PostMapping("/api/sets")
-    public void addSet(@RequestBody AddSetRequest request) throws Exception {
+    public void addSet(
+            @RequestBody AddSetRequest request,
+            @RequestParam Long userId) throws Exception {
 
         String setNumber = request.getSetNumber();
         double purchasePrice = request.getPurchasePrice();
@@ -49,7 +51,7 @@ public class LegoController {
 
         set.setCondition(condition);
 
-        portfolioService.addSet(set);
+        portfolioService.addSet(set, userId);
     }
 
     @DeleteMapping("/api/sets/{id}")

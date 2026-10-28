@@ -9,14 +9,85 @@
 
 <body>
 
-<h1>LEGO Portfolio</h1>
+<header>
+    <h1>LEGO Portfolio</h1>
+
+    <div id="account-area">
+
+        <!-- Logged out -->
+        <button id="login-button">Log In</button>
+
+        <div id="login-dropdown" style="display: none;">
+
+            <h3>Log In</h3>
+
+            <input
+                type="text"
+                id="login-username"
+                placeholder="Username"
+            >
+
+            <input
+                type="password"
+                id="login-password"
+                placeholder="Password"
+            >
+
+            <button id="submit-login">Log In</button>
+
+            <p id="login-message"></p>
+
+            <hr>
+
+            <h3>Register</h3>
+
+            <input
+                type="text"
+                id="register-username"
+                placeholder="Username"
+            >
+
+            <input
+                type="password"
+                id="register-password"
+                placeholder="Password"
+            >
+
+            <button id="submit-register">Register</button>
+
+            <p id="register-message"></p>
+
+        </div>
+
+        <!-- Logged in -->
+        <div id="user-area" style="display: none;">
+
+            <button id="username-button"></button>
+
+            <div id="user-dropdown" style="display: none;">
+                <button id="logout-button">Log Out</button>
+            </div>
+
+        </div>
+
+    </div>
+</header>
+
 
 <section>
     <h2>Add LEGO Set</h2>
 
-    <input type="text" id="set-number" placeholder="Set Number">
+    <input
+        type="text"
+        id="set-number"
+        placeholder="Set Number"
+    >
 
-    <input type="number" id="purchase-price" placeholder="Purchase Price">
+    <input
+        type="number"
+        id="purchase-price"
+        placeholder="Purchase Price"
+    >
 
     <select id="condition">
         <option value="NEW">New / Sealed</option>
@@ -25,6 +96,7 @@
 
     <button id="add-set-button">Add Set</button>
 </section>
+
 
 <section class="summary">
 
@@ -38,6 +110,7 @@
 
 </section>
 
+
 <section>
 
     <h2>My Sets</h2>
@@ -45,6 +118,7 @@
     <div id="lego-container"></div>
 
 </section>
+
 
 <script src="script.js"></script>
 

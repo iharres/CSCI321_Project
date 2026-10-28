@@ -13,20 +13,15 @@ public class UserController {
     }
 
     @PostMapping("/api/register")
-    public User register(@RequestBody User user) {
+    public UserResponse register(@RequestBody User user) {
 
-        return userService.register(
-                user.getUsername(),
-                user.getPassword()
-        );
+        User registeredUser = userService.register(user.getUsername(), user.getPassword());
+        return new UserResponse(registeredUser.getId(), registeredUser.getUsername());
     }
 
     @PostMapping("/api/login")
-    public User login(@RequestBody User user) {
-
-        return userService.login(
-                user.getUsername(),
-                user.getPassword()
-        );
+    public UserResponse login(@RequestBody User user) {
+        User loggedInUser = userService.login(user.getUsername(), user.getPassword());
+        return new UserResponse(loggedInUser.getId(), loggedInUser.getUsername());
     }
 }

@@ -20,12 +20,8 @@ public class UserService {
     }
 
     public User register(String username, String password) {
-
         if (userRepository.findByUsername(username).isPresent()) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Username already exists"
-            );
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
         }
 
         String hashedPassword = passwordEncoder.encode(password);
@@ -46,10 +42,7 @@ public class UserService {
                 );
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Invalid username or password"
-            );
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
         }
 
         return user;

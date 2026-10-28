@@ -8,16 +8,21 @@ import java.util.List;
 public class PortfolioService {
 
     private final LegoSetRepository legoSetRepository;
+    private final UserRepository userRepository;
 
-    public PortfolioService(LegoSetRepository legoSetRepository) {
+    public PortfolioService(
+            LegoSetRepository legoSetRepository,
+            UserRepository userRepository) {
+
         this.legoSetRepository = legoSetRepository;
+        this.userRepository = userRepository;
     }
 
-    public Portfolio getPortfolio() {
+    public Portfolio getPortfolio(Long userId) {
 
         Portfolio portfolio = new Portfolio();
 
-        List<LegoSet> sets = legoSetRepository.findAll();
+        List<LegoSet> sets = legoSetRepository.findByUserId(userId);
 
         for (LegoSet set : sets) {
             portfolio.addSet(set);
@@ -26,11 +31,17 @@ public class PortfolioService {
         return portfolio;
     }
 
-    public void addSet(LegoSet set) {
-        LegoSet savedSet = legoSetRepository.saveAndFlush(set);
+    public void addSet(LegoSet set, Long userId) {
 
-        System.out.println("Saved LEGO set with database ID: " + savedSet.getId());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        set.setUser(user);
+
+        legoSetRepository.saveAndFlush(set);
     }
+
     public void removeSet(Long id) {
         legoSetRepository.deleteById(id);
     }

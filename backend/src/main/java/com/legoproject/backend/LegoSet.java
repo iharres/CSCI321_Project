@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class LegoSet {
@@ -17,6 +19,10 @@ public class LegoSet {
     private double purchasePrice;
     private double currentValue;
     private String condition;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public LegoSet() {
     }
@@ -52,6 +58,10 @@ public class LegoSet {
         return condition;
     }
 
+    public User getUser() {
+        return user;
+    }
+
     public double getProfit() {
         return currentValue - purchasePrice;
     }
@@ -75,7 +85,10 @@ public class LegoSet {
     public void setCondition(String condition) {
         this.condition = condition;
     }
-}
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+}
 
 
