@@ -65,14 +65,14 @@ nav{
 .nav-links a.active{ opacity:1; border-bottom:3px solid var(--yellow); padding-bottom:3px; }
 
 /* Stylizes the buttons */
-#add-set-button, #cancel-add-set, #submit-add-set{
+#add-set-button, #cancel-add-set, #submit-add-set, #login-button, #submit-login, #submit-register, #cancel-login, #cancel-register, #switch-to-login, #switch-to-register{
   font-family:'Work Sans', sans-serif; font-weight:700; font-size:13px;
   color:#fff; background:var(--blue); border:none; border-radius:8px;
   padding: 10px 16px; box-shadow: 0 4px 0 rgba(0,0,0,0.25); cursor:pointer;
   transition: background-color 0.3s ease;
 }
 /* Makes the buttons darken when you hover over them */
-#add-set-button:hover, #cancel-add-set:hover, #submit-add-set:hover{
+#add-set-button:hover, #cancel-add-set:hover, #submit-add-set:hover, #login-button:hover, #submit-login:hover, #submit-register:hover, #cancel-login:hover, #cancel-register:hover, #switch-to-login:hover, #switch-to-register:hover{
   background-color: #07048b;
 }
 

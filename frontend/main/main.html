@@ -27,6 +27,7 @@
     </div>
     <div class="nav-right">
       <button id="add-set-button">+ Add a Set</button>
+      <button id="login-button">Log In</button>
       
       <!-- Account menu: clicking the avatar button opens the dropdown below it (handled in script.js). -->
       <div class="account" id="accountMenuRoot">
@@ -54,6 +55,79 @@
     </div>
   </nav>
 
+<!-- Login dialog -->
+<dialog id="login-dialog">
+  <h2>Welcome Back</h2>
+  <p>Log in to your Brick Wallet account.</p>
+
+  <form id="login-form">
+    <label for="login-username">Username</label>
+    <input
+      type="text"
+      id="login-username"
+      placeholder="Enter your username"
+      required
+    />
+
+    <label for="login-password">Password</label>
+    <input
+      type="password"
+      id="login-password"
+      placeholder="Enter your password"
+      required
+    />
+
+    <p id="login-message" role="status" aria-live="polite"></p>
+
+    <div class="add-set-actions">
+      <button type="button" id="cancel-login">Cancel</button>
+      <button type="submit" id="submit-login">Log In</button>
+    </div>
+  </form>
+
+  <hr>
+
+  <p>Don't have an account?</p>
+  <button type="button" id="switch-to-register">Create an Account</button>
+</dialog>
+
+
+<!-- Registration dialog -->
+<dialog id="register-dialog">
+  <h2>Start Your Collection</h2>
+  <p>Create an account to start tracking your LEGO collection.</p>
+
+  <form id="register-form">
+    <label for="register-username">Username</label>
+    <input
+      type="text"
+      id="register-username"
+      placeholder="Choose a username"
+      required
+    />
+
+    <label for="register-password">Password</label>
+    <input
+      type="password"
+      id="register-password"
+      placeholder="Choose a password"
+      required
+    />
+
+    <p id="register-message" role="status" aria-live="polite"></p>
+
+    <div class="add-set-actions">
+      <button type="button" id="cancel-register">Cancel</button>
+      <button type="submit" id="submit-register">Register</button>
+    </div>
+  </form>
+
+  <hr>
+
+  <p>Already have an account?</p>
+  <button type="button" id="switch-to-login">Log In</button>
+</dialog>
+
   <!-- ===== Collection page: the default view showing the user's own set holdings. ===== -->
   <div id="view-collection" class="view">
 
@@ -63,7 +137,10 @@
       <span class="eyebrow">Your Collection, Valued Live</span>
       <h1>Brick Wallet</h1>
       <p>Track your LEGO collection like a stock portfolio — real market pricing, sorted by condition, updated automatically.</p>
-      <button class="hero-cta"><span class="stud-pair"><span></span><span></span></span> Start tracking free</button>
+      <button class="hero-cta" id="register-button">
+        <span class="stud-pair"><span></span><span></span></span>
+        Start tracking free
+        </button>
     </div>
   </div>
 

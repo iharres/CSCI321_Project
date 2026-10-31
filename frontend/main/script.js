@@ -339,6 +339,51 @@
     });
   }
 
+  // ===== Login and registration dialogs =====
+  const loginDialog = document.getElementById('login-dialog');
+  const registerDialog = document.getElementById('register-dialog');
+
+  const loginButton = document.getElementById('login-button');
+  const startTrackingButton = document.getElementById('register-button');
+
+  const closeLoginDialog = document.getElementById('cancel-login');
+  const closeRegisterDialog = document.getElementById('cancel-register');
+
+  const switchToRegister = document.getElementById('switch-to-register');
+  const switchToLogin = document.getElementById('switch-to-login');
+
+  // Open the login dialog
+  loginButton.addEventListener('click', function() {
+    loginDialog.showModal();
+  });
+
+  // Open the registration dialog
+  startTrackingButton.addEventListener('click', function() {
+    registerDialog.showModal();
+  });
+
+  // Close the login dialog
+  closeLoginDialog.addEventListener('click', function() {
+    loginDialog.close();
+  });
+
+  // Close the registration dialog
+  closeRegisterDialog.addEventListener('click', function() {
+    registerDialog.close();
+  });
+
+  // Switch from login to registration
+  switchToRegister.addEventListener('click', function() {
+    loginDialog.close();
+    registerDialog.showModal();
+  });
+
+  // Switch from registration to login
+  switchToLogin.addEventListener('click', function() {
+    registerDialog.close();
+    loginDialog.showModal();
+  });
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', loadPortfolio);
   } else {
