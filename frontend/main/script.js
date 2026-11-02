@@ -255,7 +255,14 @@
   }
   function loadPortfolio(){
     setStatus('Connecting to your portfolio…');
-    fetch(API_BASE_URL + '/api/portfolio')
+    var userId = localStorage.getItem('userId');
+
+    if (!userId) {
+      setStatus('Please log in to view your portfolio.');
+      return;
+    }
+
+    fetch(API_BASE_URL + '/api/portfolio?userId=' + encodeURIComponent(userId))
       .then(function(response){
         if (!response.ok) throw new Error('The API returned HTTP ' + response.status + '.');
         return response.json();
@@ -310,7 +317,14 @@
       addSetMessage.textContent = 'Adding set…';
       submitAddSet.disabled = true;
 
-      fetch(API_BASE_URL + '/api/sets', {
+      var userId = localStorage.getItem('userId');
+
+      if (!userId) {
+        addSetMessage.textContent = 'Please log in before adding a set.';
+        return;
+      }
+
+      fetch(API_BASE_URL + '/api/sets?userId=' + encodeURIComponent(userId), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -352,6 +366,98 @@
   const switchToRegister = document.getElementById('switch-to-register');
   const switchToLogin = document.getElementById('switch-to-login');
 
+  const loginForm = document.getElementById('login-form');
+  const loginMessage = document.getElementById('login-message');
+
+  const registerForm = document.getElementById('register-form');
+  const registerMessage = document.getElementById('register-message');
+
+  // Handle login form submission
+  loginForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+
+    loginMessage.textContent = 'Logging in...';
+
+    fetch(API_BASE_URL + '/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password
+      })
+    })
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('Login failed. Check your username and password.');
+        }
+
+        return response.json();
+      })
+      .then(function(data) {
+        if (!data.id) {
+          throw new Error('The server did not return valid user information.');
+        }
+        
+        // Save the user's information in the browser.
+        localStorage.setItem('userId', data.id);
+        localStorage.setItem('username', data.username);
+
+        loginDialog.close();
+        loginForm.reset();
+
+        setStatus('Logged in successfully!');
+      })
+      .catch(function(error) {
+        loginMessage.textContent = error.message;
+      });
+  });
+
+  // Handle registration form submission
+  registerForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('register-username').value;
+    const password = document.getElementById('register-password').value;
+
+    registerMessage.textContent = 'Creating account...';
+
+    fetch(API_BASE_URL + '/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password
+      })
+    })
+      .then(function(response) {
+        if (response.status === 409) {
+          throw new Error('That username already exists.');
+        }
+
+        if (!response.ok) {
+          throw new Error('Registration failed. Please try again.');
+        }
+
+        return response.json();
+      })
+      .then(function(user) {
+        registerMessage.textContent =
+          'Account created! You can now log in.';
+
+        registerForm.reset();
+      })
+      .catch(function(error) {
+        registerMessage.textContent = error.message;
+      });
+  });
+
   // Open the login dialog
   loginButton.addEventListener('click', function() {
     loginDialog.showModal();
@@ -385,8 +491,18 @@
   });
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadPortfolio);
+    document.addEventListener('DOMContentLoaded', function() {
+      if (localStorage.getItem('userId')) {
+        loadPortfolio();
+      } else {
+        setStatus('Please log in to view your portfolio.');
+      }
+    });
   } else {
-    loadPortfolio();
+    if (localStorage.getItem('userId')) {
+      loadPortfolio();
+    } else {
+      setStatus('Please log in to view your portfolio.');
+    }
   }
 })();

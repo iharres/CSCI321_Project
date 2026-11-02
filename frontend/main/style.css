@@ -76,6 +76,9 @@ nav{
   background-color: #07048b;
 }
 
+#register-button:hover{
+  background-color: #8b0404;
+}
 
 
 /* Groups the "Add a Set" button and the account menu together on the right side of the nav. */
@@ -200,6 +203,7 @@ nav{
   padding: 13px 22px; border-radius:10px;
   box-shadow: 0 5px 0 rgba(0,0,0,0.3);
   cursor:pointer;
+  transition: background-color 0.3s ease;
 }
 /* The two tiny decorative "studs" drawn inside the hero button. */
 .hero-cta .stud-pair{ display:flex; gap:4px; }
