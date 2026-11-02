@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,113 +13,150 @@
 <header>
     <h1>LEGO Portfolio</h1>
 
-    <div id="account-area">
 
-        <!-- Logged out -->
-        <button id="login-button">Log In</button>
+<div id="account-area">
 
-        <div id="login-dropdown" style="display: none;">
+    <!-- Logged out -->
+    <button id="login-button">Log In</button>
 
-            <h3>Log In</h3>
+    <div id="login-dropdown" style="display: none;">
 
-            <input
-                type="text"
-                id="login-username"
-                placeholder="Username"
-            >
+        <h3>Log In</h3>
 
-            <input
-                type="password"
-                id="login-password"
-                placeholder="Password"
-            >
+        <input
+            type="text"
+            id="login-username"
+            placeholder="Username"
+        >
 
-            <button id="submit-login">Log In</button>
+        <input
+            type="password"
+            id="login-password"
+            placeholder="Password"
+        >
 
-            <p id="login-message"></p>
+        <button id="submit-login">Log In</button>
 
-            <hr>
+        <p id="login-message"></p>
 
-            <h3>Register</h3>
+        <hr>
 
-            <input
-                type="text"
-                id="register-username"
-                placeholder="Username"
-            >
+        <h3>Register</h3>
 
-            <input
-                type="password"
-                id="register-password"
-                placeholder="Password"
-            >
+        <input
+            type="text"
+            id="register-username"
+            placeholder="Username"
+        >
 
-            <button id="submit-register">Register</button>
+        <input
+            type="password"
+            id="register-password"
+            placeholder="Password"
+        >
 
-            <p id="register-message"></p>
+        <button id="submit-register">Register</button>
 
-        </div>
+        <p id="register-message"></p>
 
-        <!-- Logged in -->
-        <div id="user-area" style="display: none;">
+    </div>
 
-            <button id="username-button"></button>
+    <!-- Logged in -->
+    <div id="user-area" style="display: none;">
 
-            <div id="user-dropdown" style="display: none;">
-                <button id="logout-button">Log Out</button>
-            </div>
+        <button id="username-button"></button>
 
+        <div id="user-dropdown" style="display: none;">
+            <button id="logout-button">Log Out</button>
         </div>
 
     </div>
-</header>
 
+</div>
+
+
+</header>
 
 <section>
     <h2>Add LEGO Set</h2>
 
-    <input
-        type="text"
-        id="set-number"
-        placeholder="Set Number"
-    >
 
-    <input
-        type="number"
-        id="purchase-price"
-        placeholder="Purchase Price"
-    >
+<!-- LEGO Box Scanner -->
+<h3>Scan LEGO Box</h3>
 
-    <select id="condition">
-        <option value="NEW">New / Sealed</option>
-        <option value="USED">Built / Used</option>
-    </select>
+<input
+    type="file"
+    id="lego-image"
+    accept="image/*"
+>
 
-    <button id="add-set-button">Add Set</button>
+<button id="scan-image-button">
+    Scan Set Number
+</button>
+
+<p id="scan-status"></p>
+
+
+<!-- Set Information -->
+<input
+    type="text"
+    id="set-number"
+    placeholder="Set Number"
+>
+
+<input
+    type="number"
+    id="purchase-price"
+    placeholder="Purchase Price"
+>
+
+<select id="condition">
+    <option value="NEW">New / Sealed</option>
+    <option value="USED">Built / Used</option>
+</select>
+
+<button id="add-set-button">
+    Add Set
+</button>
+
+
 </section>
-
 
 <section class="summary">
 
-    <h2>Portfolio Summary</h2>
 
-    <p id="total-cost">Total Cost: $0</p>
+<h2>Portfolio Summary</h2>
 
-    <p id="current-value">Current Value: $0</p>
+<p id="total-cost">
+    Total Cost: $0
+</p>
 
-    <p id="profit">Profit: $0</p>
+<p id="current-value">
+    Current Value: $0
+</p>
+
+<p id="profit">
+    Profit: $0
+</p>
+
 
 </section>
-
 
 <section>
 
-    <h2>My Sets</h2>
 
-    <div id="lego-container"></div>
+<h2>My Sets</h2>
+
+<div id="lego-container"></div>
+
 
 </section>
 
+<!-- Tesseract OCR -->
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<!-- Main JavaScript -->
 
 <script src="script.js"></script>
 
