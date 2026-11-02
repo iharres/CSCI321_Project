@@ -93,5 +93,97 @@ public class LegoController {
 
         return pricingService.calculateAverageWithoutOutliers(priceGuide);
     }
+
+    @PostMapping("/api/bricklink/identify")
+    public String identifySet(
+            @RequestBody IdentifySetRequest request) {
+
+        String ocrText = request.getOcrText();
+
+        if (ocrText == null) {
+            ocrText = "";
+        }
+
+        String normalizedOcr =
+                ocrText
+                        .toLowerCase()
+                        .replaceAll("[^a-z0-9 ]", " ")
+                        .replaceAll("\\s+", " ");
+
+        String bestCandidate = "";
+        int bestScore = Integer.MIN_VALUE;
+
+        java.util.List<String> candidates =
+                request.getCandidates();
+
+        for (int i = 0; i < candidates.size(); i++) {
+
+            String candidate =
+                    candidates.get(i);
+
+            try {
+
+                String setName =
+                        brickLinkService.getSetName(candidate);
+
+                String normalizedName =
+                        setName
+                                .toLowerCase()
+                                .replaceAll("[^a-z0-9 ]", " ")
+                                .replaceAll("\\s+", " ")
+                                .trim();
+
+                // Candidates near the top of the OCR ranking
+                // start with a slightly higher score.
+                int score =
+                        100 - (i * 5);
+
+                // Very strong match:
+                // entire BrickLink name appears in OCR text.
+                if (
+                        !normalizedName.isEmpty()
+                                && normalizedOcr.contains(normalizedName)
+                ) {
+
+                    score += 1000;
+                }
+
+                // Check individual important words from the set name.
+                String[] words =
+                        normalizedName.split(" ");
+
+                for (String word : words) {
+
+                    if (
+                            word.length() >= 4
+                                    && normalizedOcr.contains(word)
+                    ) {
+
+                        score += 150;
+                    }
+                }
+
+                System.out.println(
+                        candidate
+                                + " | "
+                                + setName
+                                + " | score = "
+                                + score
+                );
+
+                if (score > bestScore) {
+
+                    bestScore = score;
+                    bestCandidate = candidate;
+                }
+
+            } catch (Exception e) {
+
+                // Not a valid BrickLink set.
+            }
+        }
+
+        return bestCandidate;
+    }
 }
 

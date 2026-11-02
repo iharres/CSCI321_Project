@@ -127,4 +127,25 @@ public class BrickLinkService {
 
         return data.get("name").asText();
     }
+
+    public boolean setExists(String setNumber) {
+
+        try {
+            String url = "https://api.bricklink.com/api/store/v1/items/SET/" + setNumber + "-1";
+            OAuthRequest request =
+                    new OAuthRequest(Verb.GET, url);
+
+            service.signRequest(accessToken, request);
+
+            var response = service.execute(request);
+
+            int statusCode = response.getCode();
+
+            return statusCode >= 200 && statusCode < 300;
+
+        } catch (Exception e) {
+
+            return false;
+        }
+    }
 }
