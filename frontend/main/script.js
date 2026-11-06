@@ -358,7 +358,9 @@
   const registerDialog = document.getElementById('register-dialog');
 
   const loginButton = document.getElementById('login-button');
+  const logoutButton = document.getElementById('logout-button');
   const startTrackingButton = document.getElementById('register-button');
+  const accountMenuRoot = document.getElementById('accountMenuRoot');
 
   const closeLoginDialog = document.getElementById('cancel-login');
   const closeRegisterDialog = document.getElementById('cancel-register');
@@ -371,6 +373,39 @@
 
   const registerForm = document.getElementById('register-form');
   const registerMessage = document.getElementById('register-message');
+
+  function updateAuthUI() {
+    const userId = localStorage.getItem('userId');
+    const username = localStorage.getItem('username');
+
+    const accountName = document.querySelector('.account-name');
+    const whoName = document.querySelector('.who-name');
+    const whoHandle = document.querySelector('.who-handle');
+
+    if (userId) {
+      loginButton.hidden = true;
+      accountMenuRoot.hidden = false;
+      addSetButton.hidden = false;
+
+      accountName.textContent = username;
+      whoName.textContent = username;
+      whoHandle.textContent = '@' + username;
+    } else {
+      loginButton.hidden = false;
+      accountMenuRoot.hidden = true;
+      addSetButton.hidden = true;
+    }
+  }
+
+  logoutButton.addEventListener('click', function(event) {
+    event.preventDefault();
+
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
+
+    updateAuthUI();
+    window.location.reload();
+  });
 
   // Handle login form submission
   loginForm.addEventListener('submit', function(event) {
@@ -409,6 +444,8 @@
 
         loginDialog.close();
         loginForm.reset();
+
+        window.location.reload();
 
         setStatus('Logged in successfully!');
       })
@@ -492,6 +529,8 @@
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
+      updateAuthUI();
+      
       if (localStorage.getItem('userId')) {
         loadPortfolio();
       } else {
