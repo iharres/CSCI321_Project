@@ -27,7 +27,8 @@ public class SecurityConfig {
                                 "/api/login",
                                 "/api/portfolio",
                                 "/api/sets/**",
-                                "/api/bricklink/**"
+                                "/api/bricklink/**",
+                                "/api/scan-lego"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );
