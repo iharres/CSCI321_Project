@@ -235,7 +235,7 @@
           '<div class="row-right"><span class="price">' + money(set.currentValue) + '</span>' +
           '<span class="delta ' + deltaClass + '">' + arrow + ' ' + signedMoney(setProfit) + ' profit</span></div>' +
           '</div>';
-      }).join('') : '<p class="portfolio-empty">No sets in your portfolio yet.</p>';
+      }).join('') : '<p style="text-align: center;", class="portfolio-empty">No sets in your portfolio yet.</p>';
     }
     if (grid) {
       grid.innerHTML = sorted.length ? sorted.map(function(set){
@@ -248,8 +248,11 @@
           '<div class="meta"><span class="price">' + money(set.currentValue) + '</span>' +
           '<span class="delta ' + deltaClass + '">' + arrow + ' ' + signedMoney(setProfit) + '</span></div>' +
           '<div class="meta"><span class="source-meta">Purchase price: ' + money(set.purchasePrice) + '</span></div>' +
+          '<div class="meta"><span class="source-meta">Condition: ' + 
+            (set.condition === 'NEW' ? 'New' : 'Used') + 
+          '</span></div>' +
           '</div></div>';
-      }).join('') : '<p class="portfolio-empty">No sets in your portfolio yet. Add a set through the API to see it here.</p>';
+      }).join('') : '<p style="text-align: center;", class="portfolio-empty">No sets in your portfolio yet. Add a set to see it here.</p>';
     }
     setStatus('Portfolio loaded from the backend.', 'success');
   }
