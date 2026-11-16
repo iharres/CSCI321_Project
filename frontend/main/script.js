@@ -280,7 +280,7 @@
           });
       });
     });
-    setStatus('Portfolio loaded from the backend.', 'success');
+    setStatus('Portfolio loaded successfully.', 'success');
   }
   
   function loadPortfolio(){
