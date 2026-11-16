@@ -76,7 +76,21 @@ nav{
   background-color: #07048b;
 }
 
-#register-button:hover{
+.remove-set-button{
+  margin: 10px auto 0;
+  display: flex;
+  width: fit-content;
+  align-items:center;
+  gap:10px;
+  background:var(--red); color:#fff; border:none;
+  font-family:'Work Sans',sans-serif; font-weight:700; font-size:14px;
+  padding: 13px 22px; border-radius:10px;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+  cursor:pointer;
+  transition: background-color 0.3s ease;
+}
+
+#register-button:hover, .remove-set-button:hover{
   background-color: #8b0404;
 }
 

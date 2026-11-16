@@ -242,20 +242,47 @@
         var setProfit = (Number(set.currentValue) || 0) - (Number(set.purchasePrice) || 0);
         var deltaClass = setProfit >= 0 ? 'up' : 'down';
         var arrow = setProfit >= 0 ? '▲' : '▼';
+
         return '<div class="card">' +
           '<div class="card-top"><span class="stud"></span><span class="stud"></span><span class="stud"></span></div>' +
           '<div class="card-body"><div class="name">' + escapeHtml(set.setNumber) + ' ' + escapeHtml(set.name) + '</div>' +
           '<div class="meta"><span class="price">' + money(set.currentValue) + '</span>' +
           '<span class="delta ' + deltaClass + '">' + arrow + ' ' + signedMoney(setProfit) + '</span></div>' +
           '<div class="meta"><span class="source-meta">Purchase price: ' + money(set.purchasePrice) + '</span></div>' +
-          '<div class="meta"><span class="source-meta">Condition: ' + 
-            (set.condition === 'NEW' ? 'New' : 'Used') + 
+          '<div class="meta"><span class="source-meta">Condition: ' +
+          (set.condition === 'NEW' ? 'New' : 'Used') +
           '</span></div>' +
+          '<button class="remove-set-button" data-set-id="' + set.id + '">Remove</button>' +
           '</div></div>';
-      }).join('') : '<p style="text-align: center;", class="portfolio-empty">No sets in your portfolio yet. Add a set to see it here.</p>';
+      }).join('') : '<p style="text-align: center;", class="portfolio-empty">No sets in your portfolio yet. Add a set to see it here.</p>';    
     }
+    document.querySelectorAll('.remove-set-button').forEach(function(button) {
+      button.addEventListener('click', function() {
+        var setId = button.getAttribute('data-set-id');
+        var userId = localStorage.getItem('userId');
+
+        if (!userId) {
+          return;
+        }
+
+        fetch(API_BASE_URL + '/api/sets/' + encodeURIComponent(setId), {
+          method: 'DELETE'
+        })
+          .then(function(response) {
+            if (!response.ok) {
+              throw new Error('Could not remove the set.');
+            }
+
+            loadPortfolio();
+          })
+          .catch(function(error) {
+            console.error(error);
+          });
+      });
+    });
     setStatus('Portfolio loaded from the backend.', 'success');
   }
+  
   function loadPortfolio(){
     setStatus('Connecting to your portfolio…');
     var userId = localStorage.getItem('userId');
