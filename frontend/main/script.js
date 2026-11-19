@@ -164,27 +164,86 @@
   // If Spring Boot uses a port other than 8080, change this URL to match it.
   var API_BASE_URL = 'http://localhost:8080';
 
+  var csrfToken = null;
+  var csrfHeaderName = null;
+
+  async function refreshCsrfToken() {
+    var response = await fetch(API_BASE_URL + '/api/csrf', {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      throw new Error('Could not get CSRF token.');
+    }
+
+    var data = await response.json();
+
+    csrfToken = data.token;
+    csrfHeaderName = data.headerName;
+  }
+
+  function getCsrfHeaders() {
+    if (!csrfToken || !csrfHeaderName) {
+      return {};
+    }
+
+    var headers = {};
+    headers[csrfHeaderName] = csrfToken;
+    return headers;
+  }
+
+  async function checkLogin() {
+    try {
+      var response = await fetch(API_BASE_URL + '/api/session/me', {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      var user = await response.json();
+
+      // Keep the username available for displaying the logged-in account.
+      if (user.username) {
+        localStorage.setItem('username', user.username);
+      }
+
+      return true;
+
+    } catch (error) {
+      console.error('Could not check login status:', error);
+      return false;
+    }
+  }
+  
   function money(value){
     var number = Number(value);
     if (!Number.isFinite(number)) number = 0;
     return number.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
   }
+
   function signedMoney(value){
     var number = Number(value);
     if (!Number.isFinite(number)) number = 0;
     return (number > 0 ? '+' : number < 0 ? '−' : '') + money(Math.abs(number));
   }
+
   function escapeHtml(value){
     return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch){
       return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
     });
   }
+
   function setStatus(message, state){
     var status = document.getElementById('portfolio-status');
     if (!status) return;
     status.textContent = message;
     status.className = 'portfolio-status' + (state ? ' ' + state : '');
   }
+
   function renderPortfolio(portfolio){
     var sets = Array.isArray(portfolio && portfolio.sets) ? portfolio.sets : [];
     var totalCost = Number(portfolio && portfolio.totalCost);
@@ -256,28 +315,41 @@
           '</div></div>';
       }).join('') : '<p style="text-align: center;", class="portfolio-empty">No sets in your portfolio yet. Add a set to see it here.</p>';    
     }
+
+    // Removing sets
     document.querySelectorAll('.remove-set-button').forEach(function(button) {
-      button.addEventListener('click', function() {
+      button.addEventListener('click', async function() {
         var setId = button.getAttribute('data-set-id');
-        var userId = localStorage.getItem('userId');
 
-        if (!userId) {
-          return;
-        }
+        try {
+          // Make sure we have a current CSRF token.
+          if (!csrfToken || !csrfHeaderName) {
+            await refreshCsrfToken();
+          }
 
-        fetch(API_BASE_URL + '/api/sets/' + encodeURIComponent(setId), {
-          method: 'DELETE'
-        })
-          .then(function(response) {
-            if (!response.ok) {
-              throw new Error('Could not remove the set.');
+          var response = await fetch(
+            API_BASE_URL + '/api/sets/' + encodeURIComponent(setId),
+            {
+              method: 'DELETE',
+              credentials: 'include',
+              headers: getCsrfHeaders()
             }
+          );
 
-            loadPortfolio();
-          })
-          .catch(function(error) {
-            console.error(error);
-          });
+          if (response.status === 401 || response.status === 403) {
+            setStatus('Please log in to remove a set.');
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error('Could not remove the set.');
+          }
+
+          loadPortfolio();
+
+        } catch (error) {
+          console.error(error);
+        }
       });
     });
     setStatus('Portfolio loaded successfully.', 'success');
@@ -285,26 +357,42 @@
   
   function loadPortfolio(){
     setStatus('Connecting to your portfolio…');
-    var userId = localStorage.getItem('userId');
 
-    if (!userId) {
-      setStatus('Please log in to view your portfolio.');
-      return;
-    }
-
-    fetch(API_BASE_URL + '/api/portfolio?userId=' + encodeURIComponent(userId))
+    fetch(API_BASE_URL + '/api/portfolio', {
+      method: 'GET',
+      credentials: 'include'
+    })
       .then(function(response){
-        if (!response.ok) throw new Error('The API returned HTTP ' + response.status + '.');
+        if (response.status === 401 || response.status === 403) {
+          setStatus('Please log in to view your portfolio.');
+          return null;
+        }
+
+        if (!response.ok) {
+          throw new Error('The API returned HTTP ' + response.status + '.');
+        }
+
         return response.json();
       })
-      .then(renderPortfolio)
+      .then(function(portfolio) {
+        if (portfolio) {
+          renderPortfolio(portfolio);
+        }
+      })
       .catch(function(error){
         setStatus('Could not load portfolio. Make sure the Spring Boot backend is running at ' +
           API_BASE_URL + ' and that /api/portfolio is available. Details: ' + error.message, 'error');
+
         var holdings = document.getElementById('portfolio-holdings');
         var grid = document.getElementById('portfolio-grid');
-        if (holdings) holdings.innerHTML = '<p class="portfolio-empty">Portfolio data is unavailable. Check that the backend is running.</p>';
-        if (grid) grid.innerHTML = '';
+
+        if (holdings) {
+          holdings.innerHTML = '<p class="portfolio-empty">Portfolio data is unavailable. Check that the backend is running.</p>';
+        }
+
+        if (grid) {
+          grid.innerHTML = '';
+        }
       });
   }
   
@@ -333,7 +421,7 @@
 
   // Send the new set to Spring Boot.
   if (addSetForm) {
-    addSetForm.addEventListener('submit', function (event) {
+    addSetForm.addEventListener('submit', async function (event) {
       event.preventDefault();
 
       var formData = new FormData(addSetForm);
@@ -341,45 +429,53 @@
       var newSet = {
         setNumber: formData.get('setNumber').trim(),
         purchasePrice: Number(formData.get('purchasePrice')),
-        condition: formData.get('condition'),
+        condition: formData.get('condition')
       };
 
       addSetMessage.textContent = 'Adding set…';
       submitAddSet.disabled = true;
 
-      var userId = localStorage.getItem('userId');
+      try {
+        // Make sure we have a current CSRF token.
+        if (!csrfToken || !csrfHeaderName) {
+          await refreshCsrfToken();
+        }
 
-      if (!userId) {
-        addSetMessage.textContent = 'Please log in before adding a set.';
-        return;
-      }
+        var headers = Object.assign(
+          {
+            'Content-Type': 'application/json'
+          },
+          getCsrfHeaders()
+        );
 
-      fetch(API_BASE_URL + '/api/sets?userId=' + encodeURIComponent(userId), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newSet)
-      })
-        .then(function (response) {
-          if (!response.ok) {
-            throw new Error('The API returned HTTP ' + response.status + '.');
-          }
-
-          // The backend may return an empty response, so don't parse JSON here.
-          addSetDialog.close();
-          addSetForm.reset();
-
-          setStatus('Set added! Refreshing your portfolio…');
-          loadPortfolio();
-        })
-        .catch(function (error) {
-          addSetMessage.textContent =
-            'Could not add the set. ' + error.message;
-        })
-        .finally(function () {
-          submitAddSet.disabled = false;
+        var response = await fetch(API_BASE_URL + '/api/sets', {
+          method: 'POST',
+          credentials: 'include',
+          headers: headers,
+          body: JSON.stringify(newSet)
         });
+
+        if (response.status === 401 || response.status === 403) {
+          addSetMessage.textContent = 'Please log in before adding a set.';
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error('The API returned HTTP ' + response.status + '.');
+        }
+
+        addSetDialog.close();
+        addSetForm.reset();
+
+        setStatus('Set added! Refreshing your portfolio…');
+        loadPortfolio();
+
+      } catch (error) {
+        addSetMessage.textContent =
+          'Could not add the set. ' + error.message;
+      } finally {
+        submitAddSet.disabled = false;
+      }
     });
   }
 
@@ -404,22 +500,19 @@
   const registerForm = document.getElementById('register-form');
   const registerMessage = document.getElementById('register-message');
 
-  function updateAuthUI() {
-    const userId = localStorage.getItem('userId');
-    const username = localStorage.getItem('username');
-
+  function updateAuthUI(loggedIn, username) {
     const accountName = document.querySelector('.account-name');
     const whoName = document.querySelector('.who-name');
     const whoHandle = document.querySelector('.who-handle');
 
-    if (userId) {
+    if (loggedIn) {
       loginButton.hidden = true;
       accountMenuRoot.hidden = false;
       addSetButton.hidden = false;
 
-      accountName.textContent = username;
-      whoName.textContent = username;
-      whoHandle.textContent = '@' + username;
+      if (accountName) accountName.textContent = username || '';
+      if (whoName) whoName.textContent = username || '';
+      if (whoHandle) whoHandle.textContent = username ? '@' + username : '';
     } else {
       loginButton.hidden = false;
       accountMenuRoot.hidden = true;
@@ -427,14 +520,32 @@
     }
   }
 
-  logoutButton.addEventListener('click', function(event) {
+  logoutButton.addEventListener('click', async function(event) {
     event.preventDefault();
 
-    localStorage.removeItem('userId');
-    localStorage.removeItem('username');
+    try {
+      if (!csrfToken || !csrfHeaderName) {
+        await refreshCsrfToken();
+      }
 
-    updateAuthUI();
-    window.location.reload();
+      var response = await fetch(API_BASE_URL + '/api/session/logout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: getCsrfHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Logout failed.');
+      }
+
+      // The server has ended the session.
+      localStorage.removeItem('username');
+
+      window.location.reload();
+
+    } catch (error) {
+      console.error('Could not log out:', error);
+    }
   });
 
   // Handle login form submission
@@ -446,16 +557,23 @@
 
     loginMessage.textContent = 'Logging in...';
 
-    fetch(API_BASE_URL + '/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: username,
-        password: password
+    refreshCsrfToken()
+      .then(function() {
+        return fetch(API_BASE_URL + '/api/session/login', {
+          method: 'POST',
+          credentials: 'include',
+          headers: Object.assign(
+            {
+              'Content-Type': 'application/json'
+            },
+            getCsrfHeaders()
+          ),
+          body: JSON.stringify({
+            username: username,
+            password: password
+          })
+        });
       })
-    })
       .then(function(response) {
         if (!response.ok) {
           throw new Error('Login failed. Check your username and password.');
@@ -463,23 +581,17 @@
 
         return response.json();
       })
-      .then(function(data) {
-        if (!data.id) {
-          throw new Error('The server did not return valid user information.');
-        }
-        
-        // Save the user's information in the browser.
-        localStorage.setItem('userId', data.id);
-        localStorage.setItem('username', data.username);
-
+      .then(function() {
+        return refreshCsrfToken();
+      })
+      .then(function() {
         loginDialog.close();
         loginForm.reset();
 
         window.location.reload();
-
-        setStatus('Logged in successfully!');
       })
       .catch(function(error) {
+        console.error('Login error:', error);
         loginMessage.textContent = error.message;
       });
   });
@@ -557,21 +669,33 @@
     loginDialog.showModal();
   });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      updateAuthUI();
-      
-      if (localStorage.getItem('userId')) {
-        loadPortfolio();
+  async function startApplication() {
+    try {
+      // Get a CSRF token before making secured requests.
+      await refreshCsrfToken();
+
+      // Ask the backend whether we have an active login session.
+      var loggedIn = await checkLogin();
+
+      if (loggedIn) {
+        var username = localStorage.getItem('username');
+        updateAuthUI(true, username);
+        await loadPortfolio();
       } else {
+        updateAuthUI(false);
         setStatus('Please log in to view your portfolio.');
       }
-    });
-  } else {
-    if (localStorage.getItem('userId')) {
-      loadPortfolio();
-    } else {
-      setStatus('Please log in to view your portfolio.');
+
+    } catch (error) {
+      console.error('Could not start application:', error);
+      updateAuthUI(false);
+      setStatus('Could not connect to the server.', 'error');
     }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startApplication);
+  } else {
+    startApplication();
   }
 })();
