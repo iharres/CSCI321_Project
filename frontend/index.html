@@ -151,8 +151,66 @@
 
 
 </section>
+<div id="price-history-modal" class="price-history-modal">
 
+    <div class="price-history-content">
 
+        <button
+            id="close-price-history"
+            class="close-price-history">
+            ×
+        </button>
+
+        <h2 id="price-history-title">
+            Price History
+        </h2>
+
+        <div id="price-history-change">
+        </div>
+
+        <div class="history-period-buttons">
+
+            <button
+                class="history-period-button"
+                data-period="1M">
+                1M
+            </button>
+
+            <button
+                class="history-period-button"
+                data-period="3M">
+                3M
+            </button>
+
+            <button
+                class="history-period-button active"
+                data-period="6M">
+                6M
+            </button>
+
+            <button
+                class="history-period-button"
+                data-period="12M">
+                12M
+            </button>
+
+        </div>
+
+        <div class="price-chart-container">
+
+            <canvas id="price-history-chart">
+            </canvas>
+
+        </div>
+
+        <p id="price-history-message">
+        </p>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="script.js"></script>
 
 </body>

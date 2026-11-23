@@ -871,6 +871,12 @@ async function loadPortfolio() {
                     </p>
 
                     <button
+                        class="history-button"
+                        data-id="${set.id}">
+                        Price History
+                    </button>
+
+                    <button
                         class="remove-button"
                         data-id="${set.id}">
                         Remove
@@ -882,6 +888,21 @@ async function loadPortfolio() {
                     legoCard
                 );
 
+                const historyButton =
+                    legoCard.querySelector(
+                        ".history-button"
+                    );
+
+
+                historyButton.addEventListener(
+                    "click",
+                    () => {
+
+                        openPriceHistory(
+                            set
+                        );
+                    }
+                );
 
                 const removeButton =
                     legoCard.querySelector(
@@ -1168,7 +1189,488 @@ document
 
     });
 
+// ======================================================
+// PRICE HISTORY CHART
+// ======================================================
 
+let priceHistoryChart = null;
+
+let selectedHistorySet = null;
+
+
+async function openPriceHistory(set) {
+
+    selectedHistorySet =
+        set;
+
+
+    const modal =
+        document.getElementById(
+            "price-history-modal"
+        );
+
+
+    document.getElementById(
+        "price-history-title"
+    ).textContent =
+        `${set.name} — Price History`;
+
+
+    modal.style.display =
+        "flex";
+
+
+    document
+        .querySelectorAll(
+            ".history-period-button"
+        )
+        .forEach(button => {
+
+            button.classList.remove(
+                "active"
+            );
+
+            if (
+                button.dataset.period === "6M"
+            ) {
+
+                button.classList.add(
+                    "active"
+                );
+            }
+        });
+
+
+    await loadPriceHistory(
+        set.id,
+        "6M"
+    );
+}
+
+
+// ======================================================
+// LOAD PRICE HISTORY
+// ======================================================
+
+async function loadPriceHistory(
+        setId,
+        period) {
+
+    const message =
+        document.getElementById(
+            "price-history-message"
+        );
+
+
+    const changeDisplay =
+        document.getElementById(
+            "price-history-change"
+        );
+
+
+    message.textContent =
+        "Loading price history...";
+
+
+    changeDisplay.textContent =
+        "";
+
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/api/sets/${setId}/history?period=${period}`,
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Could not load price history."
+            );
+        }
+
+
+        const history =
+            await response.json();
+
+
+        console.log(
+            "Price history:",
+            history
+        );
+
+
+        if (
+            !history ||
+            history.length === 0
+        ) {
+
+            message.textContent =
+                "No sales history is available for this period.";
+
+
+            if (priceHistoryChart) {
+
+                priceHistoryChart.destroy();
+
+                priceHistoryChart =
+                    null;
+            }
+
+
+            return;
+        }
+
+
+        message.textContent =
+            "";
+
+
+        renderPriceHistoryChart(
+            history
+        );
+
+
+        updatePriceChange(
+            history
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Price history error:",
+            error
+        );
+
+
+        message.textContent =
+            "There was a problem loading price history.";
+    }
+}
+
+
+// ======================================================
+// RENDER PRICE HISTORY GRAPH
+// ======================================================
+
+function renderPriceHistoryChart(
+        history) {
+
+    const canvas =
+        document.getElementById(
+            "price-history-chart"
+        );
+
+
+    const labels =
+        history.map(point => {
+
+            const date =
+                new Date(
+                    point.date + "T00:00:00"
+                );
+
+
+            return date.toLocaleDateString(
+                undefined,
+                {
+                    month: "short",
+                    day: "numeric"
+                }
+            );
+        });
+
+
+    const values =
+        history.map(
+            point => point.value
+        );
+
+
+    const firstValue =
+        values[0];
+
+    const lastValue =
+        values[
+            values.length - 1
+        ];
+
+
+    const increased =
+        lastValue >= firstValue;
+
+
+    const lineColor =
+        increased
+            ? "#22c55e"
+            : "#ef4444";
+
+
+    const fillColor =
+        increased
+            ? "rgba(34, 197, 94, 0.12)"
+            : "rgba(239, 68, 68, 0.12)";
+
+
+    if (priceHistoryChart) {
+
+        priceHistoryChart.destroy();
+    }
+
+
+    priceHistoryChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels: labels,
+
+                    datasets: [
+                        {
+
+                            label:
+                                "Estimated Market Value",
+
+                            data:
+                                values,
+
+                            borderColor:
+                                lineColor,
+
+                            backgroundColor:
+                                fillColor,
+
+                            fill:
+                                true,
+
+                            tension:
+                                0.25,
+
+                            pointRadius:
+                                4,
+
+                            pointHoverRadius:
+                                7,
+
+                            borderWidth:
+                                3
+                        }
+                    ]
+                },
+
+
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    interaction: {
+                        intersect: false,
+                        mode: "index"
+                    },
+
+                    plugins: {
+
+                        legend: {
+                            display: false
+                        },
+
+                        tooltip: {
+
+                            callbacks: {
+
+                                label:
+                                    function(context) {
+
+                                        return (
+                                            "$" +
+                                            context.parsed.y
+                                                .toFixed(2)
+                                        );
+                                    }
+                            }
+                        }
+                    },
+
+                    scales: {
+
+                        y: {
+
+                            ticks: {
+
+                                callback:
+                                    function(value) {
+
+                                        return (
+                                            "$" +
+                                            value
+                                        );
+                                    }
+                            }
+                        }
+                    }
+                }
+            }
+        );
+}
+
+
+// ======================================================
+// PRICE CHANGE
+// ======================================================
+
+function updatePriceChange(
+        history) {
+
+    const changeDisplay =
+        document.getElementById(
+            "price-history-change"
+        );
+
+
+    if (history.length < 2) {
+
+        changeDisplay.textContent =
+            "Not enough data to calculate change.";
+
+        return;
+    }
+
+
+    const firstValue =
+        history[0].value;
+
+
+    const lastValue =
+        history[
+            history.length - 1
+        ].value;
+
+
+    const dollarChange =
+        lastValue - firstValue;
+
+
+    const percentChange =
+        (
+            dollarChange /
+            firstValue
+        ) * 100;
+
+
+    const sign =
+        dollarChange >= 0
+            ? "+"
+            : "";
+
+
+    changeDisplay.textContent =
+        `${sign}$${dollarChange.toFixed(2)} (${sign}${percentChange.toFixed(2)}%)`;
+
+
+    changeDisplay.style.color =
+        dollarChange >= 0
+            ? "#22c55e"
+            : "#ef4444";
+}
+
+
+// ======================================================
+// PERIOD BUTTONS
+// ======================================================
+
+document
+    .querySelectorAll(
+        ".history-period-button"
+    )
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            async () => {
+
+                if (!selectedHistorySet) {
+                    return;
+                }
+
+
+                document
+                    .querySelectorAll(
+                        ".history-period-button"
+                    )
+                    .forEach(otherButton => {
+
+                        otherButton.classList.remove(
+                            "active"
+                        );
+                    });
+
+
+                button.classList.add(
+                    "active"
+                );
+
+
+                await loadPriceHistory(
+                    selectedHistorySet.id,
+                    button.dataset.period
+                );
+            }
+        );
+    });
+
+
+// ======================================================
+// CLOSE PRICE HISTORY
+// ======================================================
+
+document
+    .getElementById(
+        "close-price-history"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            document.getElementById(
+                "price-history-modal"
+            ).style.display =
+                "none";
+        }
+    );
+
+
+document
+    .getElementById(
+        "price-history-modal"
+    )
+    .addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target.id ===
+                "price-history-modal"
+            ) {
+
+                event.currentTarget.style.display =
+                    "none";
+            }
+        }
+    );
 // ======================================================
 // START APPLICATION
 // ======================================================

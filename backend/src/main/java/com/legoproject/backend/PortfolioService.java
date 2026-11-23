@@ -156,4 +156,20 @@ public class PortfolioService {
                 "LEGO set not found or does not belong to this user"
         );
     }
+
+    public LegoSet getSetForUser(
+            Long id,
+            Long userId) {
+
+        return legoSetRepository
+                .findByIdAndUserId(
+                        id,
+                        userId
+                )
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "LEGO set not found or does not belong to this user"
+                        )
+                );
+    }
 }

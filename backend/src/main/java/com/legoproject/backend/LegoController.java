@@ -13,17 +13,20 @@ public class LegoController {
     private final PortfolioService portfolioService;
     private final BrickLinkService brickLinkService;
     private final PricingService pricingService;
+    private final PriceHistoryService priceHistoryService;
 
     public LegoController(
             PortfolioService portfolioService,
             BrickLinkService brickLinkService,
             PricingService pricingService,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            PriceHistoryService priceHistoryService) {
 
         this.portfolioService = portfolioService;
         this.brickLinkService = brickLinkService;
         this.pricingService = pricingService;
         this.userRepository = userRepository;
+        this.priceHistoryService = priceHistoryService;
     }
 
 
@@ -35,24 +38,12 @@ public class LegoController {
             Authentication authentication) {
 
         if (
-                authentication == null ||
-                        !authentication.isAuthenticated()
+                authentication == null || !authentication.isAuthenticated()
         ) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "You must be logged in"
-            );
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You must be logged in");
         }
 
-        return userRepository
-                .findByUsername(authentication.getName())
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.UNAUTHORIZED,
-                                "User not found"
-                        )
-                );
+        return userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
     }
 
 
@@ -64,12 +55,9 @@ public class LegoController {
     public Portfolio getPortfolio(
             Authentication authentication) {
 
-        User user =
-                getAuthenticatedUser(authentication);
+        User user = getAuthenticatedUser(authentication);
 
-        return portfolioService.getPortfolio(
-                user.getId()
-        );
+        return portfolioService.getPortfolio(user.getId());
     }
 
 
@@ -88,62 +76,30 @@ public class LegoController {
          *
          * The authenticated session determines the owner.
          */
-        User user =
-                getAuthenticatedUser(authentication);
+        User user = getAuthenticatedUser(authentication);
 
 
-        String setNumber =
-                request.getSetNumber();
+        String setNumber = request.getSetNumber();
 
-        double purchasePrice =
-                request.getPurchasePrice();
+        double purchasePrice = request.getPurchasePrice();
 
-        String condition =
-                request.getCondition();
+        String condition = request.getCondition();
 
+        String name = brickLinkService.getSetName(setNumber);
 
-        String name =
-                brickLinkService.getSetName(
-                        setNumber
-                );
+        BrickLinkPriceGuide priceGuide = brickLinkService.getPriceGuide(setNumber, condition);
+        double estimatedValue = pricingService.calculateAverageWithoutOutliers(priceGuide);
+        LegoSet set = new LegoSet(setNumber, name, purchasePrice, estimatedValue);
 
 
-        BrickLinkPriceGuide priceGuide =
-                brickLinkService.getPriceGuide(
-                        setNumber,
-                        condition
-                );
-
-
-        double estimatedValue =
-                pricingService
-                        .calculateAverageWithoutOutliers(
-                                priceGuide
-                        );
-
-
-        LegoSet set =
-                new LegoSet(
-                        setNumber,
-                        name,
-                        purchasePrice,
-                        estimatedValue
-                );
-
-
-        set.setCondition(
-                condition
-        );
+        set.setCondition(condition);
 
 
         /*
          * The user ID comes from the server-side
          * authenticated session.
          */
-        portfolioService.addSet(
-                set,
-                user.getId()
-        );
+        portfolioService.addSet(set, user.getId());
     }
 
 
@@ -152,14 +108,11 @@ public class LegoController {
     // ======================================================
 
     @DeleteMapping("/api/sets/{id}")
-    public void deleteSet(
-            @PathVariable Long id,
-            Authentication authentication) {
+    public void deleteSet(@PathVariable Long id, Authentication authentication) {
 
         User user = getAuthenticatedUser(authentication);
 
-        try {
-            portfolioService.removeSet(id, user.getId());
+        try {portfolioService.removeSet(id, user.getId());
 
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "LEGO set not found");
@@ -177,25 +130,14 @@ public class LegoController {
             @RequestBody LegoSet updatedSet,
             Authentication authentication) {
 
-        User user =
-                getAuthenticatedUser(
-                        authentication
-                );
+        User user = getAuthenticatedUser(authentication);
 
         try {
-
-            portfolioService.updateSet(
-                    setNumber,
-                    updatedSet,
-                    user.getId()
-            );
+            portfolioService.updateSet(setNumber, updatedSet, user.getId());
 
         } catch (IllegalArgumentException e) {
 
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "LEGO set not found"
-            );
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "LEGO set not found");
         }
     }
 
@@ -208,10 +150,7 @@ public class LegoController {
     public BrickLinkPriceGuide getBrickLinkPrice(
             @PathVariable String setNumber) throws Exception {
 
-        return brickLinkService.getPriceGuide(
-                setNumber,
-                "NEW"
-        );
+        return brickLinkService.getPriceGuide(setNumber, "NEW");
     }
 
 
@@ -223,15 +162,9 @@ public class LegoController {
     public double getMedianPrice(
             @PathVariable String setNumber) throws Exception {
 
-        BrickLinkPriceGuide priceGuide =
-                brickLinkService.getPriceGuide(
-                        setNumber,
-                        "NEW"
-                );
+        BrickLinkPriceGuide priceGuide = brickLinkService.getPriceGuide(setNumber, "NEW");
 
-        return pricingService.calculateMedianPrice(
-                priceGuide
-        );
+        return pricingService.calculateMedianPrice(priceGuide);
     }
 
 
@@ -243,16 +176,8 @@ public class LegoController {
     public double getAveragePrice(
             @PathVariable String setNumber) throws Exception {
 
-        BrickLinkPriceGuide priceGuide =
-                brickLinkService.getPriceGuide(
-                        setNumber,
-                        "NEW"
-                );
-
-        return pricingService
-                .calculateAverageWithoutOutliers(
-                        priceGuide
-                );
+        BrickLinkPriceGuide priceGuide = brickLinkService.getPriceGuide(setNumber, "NEW");
+        return pricingService.calculateAverageWithoutOutliers(priceGuide);
     }
 
 
@@ -264,8 +189,7 @@ public class LegoController {
     public String identifySet(
             @RequestBody IdentifySetRequest request) {
 
-        String ocrText =
-                request.getOcrText();
+        String ocrText = request.getOcrText();
 
         if (ocrText == null) {
             ocrText = "";
@@ -285,104 +209,42 @@ public class LegoController {
                         );
 
 
-        String bestCandidate =
-                "";
+        String bestCandidate = "";
 
-        int bestScore =
-                Integer.MIN_VALUE;
+        int bestScore = Integer.MIN_VALUE;
 
 
-        java.util.List<String> candidates =
-                request.getCandidates();
+        java.util.List<String> candidates = request.getCandidates();
 
-
-        for (
-                int i = 0;
-                i < candidates.size();
-                i++
-        ) {
-
-            String candidate =
-                    candidates.get(i);
+        for (int i = 0; i < candidates.size(); i++) {
+            String candidate = candidates.get(i);
 
 
             try {
+                String setName = brickLinkService.getSetName(candidate);
 
-                String setName =
-                        brickLinkService.getSetName(
-                                candidate
-                        );
+                String normalizedName = setName.toLowerCase().replaceAll("[^a-z0-9 ]", " ").replaceAll("\\s+", " ").trim();
+                int score = 100 - (i * 5);
 
-
-                String normalizedName =
-                        setName
-                                .toLowerCase()
-                                .replaceAll(
-                                        "[^a-z0-9 ]",
-                                        " "
-                                )
-                                .replaceAll(
-                                        "\\s+",
-                                        " "
-                                )
-                                .trim();
-
-
-                int score =
-                        100 - (i * 5);
-
-
-                if (
-                        !normalizedName.isEmpty()
-                                &&
-                                normalizedOcr.contains(
-                                        normalizedName
-                                )
-                ) {
-
-                    score +=
-                            1000;
+                if (!normalizedName.isEmpty() && normalizedOcr.contains(normalizedName)) {
+                    score += 1000;
                 }
 
 
-                String[] words =
-                        normalizedName.split(
-                                " "
-                        );
+                String[] words = normalizedName.split(" ");
 
 
                 for (String word : words) {
-
-                    if (
-                            word.length() >= 4
-                                    &&
-                                    normalizedOcr.contains(
-                                            word
-                                    )
-                    ) {
-
-                        score +=
-                                150;
+                    if (word.length() >= 4 && normalizedOcr.contains(word)) {
+                        score += 150;
                     }
                 }
 
-
-                System.out.println(
-                        candidate
-                                + " | "
-                                + setName
-                                + " | score = "
-                                + score
-                );
-
+                System.out.println(candidate + " | " + setName + " | score = " + score);
 
                 if (score > bestScore) {
-
-                    bestScore =
-                            score;
-
-                    bestCandidate =
-                            candidate;
+                    bestScore = score;
+                    bestCandidate = candidate;
                 }
 
 
@@ -392,7 +254,16 @@ public class LegoController {
             }
         }
 
-
         return bestCandidate;
+    }
+
+    @GetMapping("/api/sets/{id}/history")
+    public java.util.List<PriceHistoryPoint> getSetPriceHistory(@PathVariable Long id, @RequestParam(defaultValue = "6M") String period, Authentication authentication) throws Exception {
+
+        User user = getAuthenticatedUser(authentication);
+
+        LegoSet set = portfolioService.getSetForUser(id, user.getId());
+
+        return priceHistoryService.getPriceHistory(set.getSetNumber(), set.getCondition(), period);
     }
 }
