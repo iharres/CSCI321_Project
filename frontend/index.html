@@ -11,9 +11,11 @@
 <body>
 
 <header>
-    <h1>LEGO Portfolio</h1>
+    <h1>Brick Wallet</h1>
 
 
+
+    
 <div id="account-area">
 
     <!-- Logged out -->
@@ -76,6 +78,61 @@
 
 
 </header>
+
+<section class="portfolio-history-section">
+
+    <div class="portfolio-history-header">
+
+        <div>
+            <h2>Portfolio Performance</h2>
+
+            <div id="portfolio-history-change">
+            </div>
+        </div>
+
+        <div class="portfolio-period-buttons">
+
+            <button
+                class="portfolio-period-button"
+                data-period="1M">
+                1M
+            </button>
+
+            <button
+                class="portfolio-period-button"
+                data-period="3M">
+                3M
+            </button>
+
+            <button
+                class="portfolio-period-button active"
+                data-period="6M">
+                6M
+            </button>
+
+            <button
+                class="portfolio-period-button"
+                data-period="12M">
+                12M
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="portfolio-chart-container">
+
+        <canvas id="portfolio-history-chart">
+        </canvas>
+
+    </div>
+
+
+    <p id="portfolio-history-message">
+    </p>
+
+</section>
 
 <section>
     <h2>Add LEGO Set</h2>

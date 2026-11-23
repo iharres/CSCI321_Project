@@ -1402,20 +1402,9 @@ function renderPriceHistoryChart(
         ];
 
 
-    const increased =
-        lastValue >= firstValue;
+    const lineColor = "#16a34a";
 
-
-    const lineColor =
-        increased
-            ? "#22c55e"
-            : "#ef4444";
-
-
-    const fillColor =
-        increased
-            ? "rgba(34, 197, 94, 0.12)"
-            : "rgba(239, 68, 68, 0.12)";
+    const fillColor = "rgba(22, 163, 74, 0.08)";
 
 
     if (priceHistoryChart) {
@@ -1505,23 +1494,49 @@ function renderPriceHistoryChart(
                         }
                     },
 
-                    scales: {
+scales: {
 
-                        y: {
+    x: {
 
-                            ticks: {
+        grid: {
+            display: false
+        },
 
-                                callback:
-                                    function(value) {
+        border: {
+            display: false
+        },
 
-                                        return (
-                                            "$" +
-                                            value
-                                        );
-                                    }
-                            }
-                        }
-                    }
+        ticks: {
+            color: "#6b7280"
+        }
+    },
+
+
+    y: {
+
+        border: {
+            display: false
+        },
+
+        grid: {
+            color: "#f0f0f0"
+        },
+
+        ticks: {
+
+            color: "#6b7280",
+
+            callback:
+                function(value) {
+
+                    return (
+                        "$" +
+                        value
+                    );
+                }
+        }
+    }
+}
                 }
             }
         );
@@ -1672,6 +1687,416 @@ document
         }
     );
 // ======================================================
+// PORTFOLIO HISTORY
+// ======================================================
+
+let portfolioHistoryChart = null;
+
+
+// ======================================================
+// LOAD PORTFOLIO HISTORY
+// ======================================================
+
+async function loadPortfolioHistory(period = "6M") {
+
+    const message =
+        document.getElementById(
+            "portfolio-history-message"
+        );
+
+
+    const changeDisplay =
+        document.getElementById(
+            "portfolio-history-change"
+        );
+
+
+    message.textContent =
+        "Loading portfolio history...";
+
+
+    changeDisplay.textContent =
+        "";
+
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/api/portfolio/history?period=${period}`,
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Could not load portfolio history."
+            );
+        }
+
+
+        const history =
+            await response.json();
+
+
+        console.log(
+            "Portfolio history:",
+            history
+        );
+
+
+        if (
+            !history ||
+            history.length === 0
+        ) {
+
+            message.textContent =
+                "No portfolio history is available yet.";
+
+
+            if (portfolioHistoryChart) {
+
+                portfolioHistoryChart.destroy();
+
+                portfolioHistoryChart =
+                    null;
+            }
+
+
+            return;
+        }
+
+
+        message.textContent =
+            "";
+
+
+        renderPortfolioHistoryChart(
+            history
+        );
+
+
+        updatePortfolioHistoryChange(
+            history
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Portfolio history error:",
+            error
+        );
+
+
+        message.textContent =
+            "There was a problem loading portfolio history.";
+    }
+}
+
+
+// ======================================================
+// RENDER PORTFOLIO GRAPH
+// ======================================================
+
+function renderPortfolioHistoryChart(
+        history) {
+
+    const canvas =
+        document.getElementById(
+            "portfolio-history-chart"
+        );
+
+
+    const labels =
+        history.map(point => {
+
+            const date =
+                new Date(
+                    point.date + "T00:00:00"
+                );
+
+
+            return date.toLocaleDateString(
+                undefined,
+                {
+                    month: "short",
+                    day: "numeric"
+                }
+            );
+        });
+
+
+    const values =
+        history.map(
+            point => point.value
+        );
+
+
+    const firstValue =
+        values[0];
+
+
+    const lastValue =
+        values[
+            values.length - 1
+        ];
+
+
+        const lineColor =
+            "#16a34a";
+
+
+    const fillColor =
+        "rgba(22, 163, 74, 0.08)";  
+
+
+    if (portfolioHistoryChart) {
+
+        portfolioHistoryChart.destroy();
+    }
+
+
+    portfolioHistoryChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels: labels,
+
+                    datasets: [
+                        {
+
+                            label:
+                                "Portfolio Value",
+
+                            data:
+                                values,
+
+                            borderColor:
+                                lineColor,
+
+                            backgroundColor:
+                                fillColor,
+
+                            fill:
+                                true,
+
+                            tension:
+                                0.25,
+
+                            pointRadius:
+                                3,
+
+                            pointHoverRadius:
+                                7,
+
+                            borderWidth:
+                                3
+                        }
+                    ]
+                },
+
+
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    interaction: {
+
+                        intersect:
+                            false,
+
+                        mode:
+                            "index"
+                    },
+
+
+                    plugins: {
+
+                        legend: {
+                            display: false
+                        },
+
+
+                        tooltip: {
+
+                            callbacks: {
+
+                                label:
+                                    function(context) {
+
+                                        return (
+                                            "Portfolio Value: $" +
+                                            context.parsed.y
+                                                .toFixed(2)
+                                        );
+                                    }
+                            }
+                        }
+                    },
+
+
+            scales: {
+
+                  x: {
+                    grid: {
+                     display: false
+                  },
+
+               border: {
+                    display: false
+                },
+
+                ticks: {
+                   color: "#6b7280"
+                   }
+     },
+
+
+    y: {
+
+        border: {
+            display: false
+        },
+
+        grid: {
+            color: "#f0f0f0"
+        },
+
+        ticks: {
+
+            color: "#6b7280",
+
+            callback:
+                function(value) {
+
+                    return (
+                        "$" +
+                        value
+                    );
+                }
+                }
+             }
+            }
+                }
+            }
+        );
+}
+
+
+// ======================================================
+// PORTFOLIO CHANGE
+// ======================================================
+
+function updatePortfolioHistoryChange(
+        history) {
+
+    const changeDisplay =
+        document.getElementById(
+            "portfolio-history-change"
+        );
+
+
+    if (history.length < 2) {
+
+        changeDisplay.textContent =
+            "Not enough history to calculate change.";
+
+        return;
+    }
+
+
+    const firstValue =
+        history[0].value;
+
+
+    const lastValue =
+        history[
+            history.length - 1
+        ].value;
+
+
+    const dollarChange =
+        lastValue - firstValue;
+
+
+    const percentChange =
+        firstValue === 0
+            ? 0
+            : (
+                dollarChange /
+                firstValue
+            ) * 100;
+
+
+    const sign =
+        dollarChange >= 0
+            ? "+"
+            : "";
+
+
+    changeDisplay.textContent =
+        `${sign}$${dollarChange.toFixed(2)} (${sign}${percentChange.toFixed(2)}%)`;
+
+
+    changeDisplay.style.color =
+        dollarChange >= 0
+            ? "#22c55e"
+            : "#ef4444";
+}
+
+
+// ======================================================
+// PORTFOLIO PERIOD BUTTONS
+// ======================================================
+
+document
+    .querySelectorAll(
+        ".portfolio-period-button"
+    )
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            async () => {
+
+                document
+                    .querySelectorAll(
+                        ".portfolio-period-button"
+                    )
+                    .forEach(otherButton => {
+
+                        otherButton.classList.remove(
+                            "active"
+                        );
+                    });
+
+
+                button.classList.add(
+                    "active"
+                );
+
+
+                await loadPortfolioHistory(
+                    button.dataset.period
+                );
+            }
+        );
+    });
+
+// ======================================================
 // START APPLICATION
 // ======================================================
 
@@ -1688,10 +2113,13 @@ async function startApplication() {
         await checkLogin();
 
 
-    if (loggedIn) {
+   if (loggedIn) {
 
-        await loadPortfolio();
+    await loadPortfolio();
 
+    await loadPortfolioHistory(
+        "6M"
+    );
     } else {
 
         console.log(
