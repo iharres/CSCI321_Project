@@ -15,27 +15,79 @@ public class PriceHistoryService {
 
     private final BrickLinkService brickLinkService;
 
-    public PriceHistoryService(
-            BrickLinkService brickLinkService) {
+    private final SetPriceHistoryService
+            setPriceHistoryService;
 
-        this.brickLinkService =
-                brickLinkService;
+
+    public PriceHistoryService(
+            BrickLinkService brickLinkService,
+            SetPriceHistoryService setPriceHistoryService) {
+
+        this.brickLinkService = brickLinkService;
+
+        this.setPriceHistoryService = setPriceHistoryService;
     }
 
 
     public List<PriceHistoryPoint> getPriceHistory(
             String setNumber,
             String condition,
-            String period) throws Exception {
+            String period) {
 
         String normalizedCondition =
-                normalizeCondition(condition);
+                normalizeCondition(
+                        condition
+                );
 
+
+        /*
+         * First try to update our PostgreSQL cache
+         * using the newest BrickLink sales.
+         *
+         * If BrickLink is unavailable, we simply
+         * continue using whatever is already saved.
+         */
+        try {
+
+            updateCacheFromBrickLink(
+                    setNumber,
+                    normalizedCondition
+            );
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "BrickLink unavailable for "
+                            + setNumber
+                            + ". Using cached price history."
+            );
+        }
+
+
+        /*
+         * Whether BrickLink worked or not,
+         * the graph now reads from PostgreSQL.
+         */
+        return buildHistoryFromCache(
+                setNumber,
+                normalizedCondition,
+                period
+        );
+    }
+
+
+    // ======================================================
+    // UPDATE DATABASE CACHE FROM BRICKLINK
+    // ======================================================
+
+    private void updateCacheFromBrickLink(
+            String setNumber,
+            String condition) throws Exception {
 
         BrickLinkPriceGuide priceGuide =
                 brickLinkService.getPriceGuide(
                         setNumber,
-                        normalizedCondition
+                        condition
                 );
 
 
@@ -43,27 +95,18 @@ public class PriceHistoryService {
                 priceGuide.getSales();
 
 
-        if (sales == null || sales.isEmpty()) {
-            return new ArrayList<>();
+        if (
+                sales == null
+                        ||
+                        sales.isEmpty()
+        ) {
+
+            return;
         }
 
 
-        LocalDate cutoffDate =
-                getCutoffDate(period);
-
-
-        LocalDate today =
-                LocalDate.now();
-
-
-        /*
-         * Group ALL available BrickLink sales by week.
-         *
-         * We intentionally do not filter by the requested
-         * period yet because we may need a sale from before
-         * the cutoff as the starting value.
-         */
-        Map<LocalDate, List<BrickLinkSale>> weeklySales =
+        Map<LocalDate, List<BrickLinkSale>>
+                weeklySales =
                 new TreeMap<>();
 
 
@@ -82,32 +125,31 @@ public class PriceHistoryService {
 
             LocalDate weekStart =
                     saleDate.with(
-                            TemporalAdjusters.previousOrSame(
-                                    DayOfWeek.MONDAY
-                            )
+                            TemporalAdjusters
+                                    .previousOrSame(
+                                            DayOfWeek.MONDAY
+                                    )
                     );
 
 
             weeklySales
                     .computeIfAbsent(
                             weekStart,
-                            key -> new ArrayList<>()
+                            key ->
+                                    new ArrayList<>()
                     )
-                    .add(sale);
+                    .add(
+                            sale
+                    );
         }
 
 
-        /*
-         * Convert each week's real sales into
-         * one estimated market value.
-         */
-        Map<LocalDate, PriceHistoryPoint> actualWeeklyValues =
-                new TreeMap<>();
-
-
         for (
-                Map.Entry<LocalDate, List<BrickLinkSale>> entry
-                : weeklySales.entrySet()
+                Map.Entry<
+                        LocalDate,
+                        List<BrickLinkSale>
+                        > entry :
+                weeklySales.entrySet()
         ) {
 
             List<BrickLinkSale> filteredSales =
@@ -121,67 +163,132 @@ public class PriceHistoryService {
             }
 
 
-            double weeklyValue =
+            double value =
                     calculateWeightedAverage(
                             filteredSales
                     );
 
 
-            actualWeeklyValues.put(
+            value =
+                    roundToTwoDecimals(
+                            value
+                    );
+
+
+            /*
+             * This is a REAL weekly observation
+             * derived from BrickLink sales.
+             */
+            setPriceHistoryService.savePrice(
+                    setNumber,
+                    condition,
                     entry.getKey(),
-                    new PriceHistoryPoint(
-                            entry.getKey(),
-                            roundToTwoDecimals(
-                                    weeklyValue
-                            ),
-                            filteredSales.size()
-                    )
+                    value,
+                    "BRICKLINK_SALES"
             );
         }
+    }
 
 
-        if (actualWeeklyValues.isEmpty()) {
+    // ======================================================
+    // BUILD GRAPH FROM DATABASE
+    // ======================================================
+
+    private List<PriceHistoryPoint>
+    buildHistoryFromCache(
+            String setNumber,
+            String condition,
+            String period) {
+
+        List<SetPriceHistory> savedHistory =
+                setPriceHistoryService
+                        .getHistory(
+                                setNumber,
+                                condition
+                        );
+
+
+        if (
+                savedHistory == null
+                        ||
+                        savedHistory.isEmpty()
+        ) {
+
             return new ArrayList<>();
         }
 
 
+        Map<LocalDate, Double> actualValues =
+                new TreeMap<>();
+
+
+        for (
+                SetPriceHistory saved :
+                savedHistory
+        ) {
+
+            actualValues.put(
+                    saved.getPriceDate(),
+                    saved.getEstimatedValue()
+            );
+        }
+
+
+        LocalDate cutoffDate =
+                getCutoffDate(
+                        period
+                );
+
+
         LocalDate startWeek =
                 cutoffDate.with(
-                        TemporalAdjusters.previousOrSame(
-                                DayOfWeek.MONDAY
-                        )
+                        TemporalAdjusters
+                                .previousOrSame(
+                                        DayOfWeek.MONDAY
+                                )
                 );
 
 
         LocalDate currentWeek =
-                today.with(
-                        TemporalAdjusters.previousOrSame(
-                                DayOfWeek.MONDAY
-                        )
-                );
+                LocalDate.now()
+                        .with(
+                                TemporalAdjusters
+                                        .previousOrSame(
+                                                DayOfWeek.MONDAY
+                                        )
+                        );
 
 
         /*
-         * Find the most recent known market value
-         * from before the requested period.
+         * Find the latest real observation
+         * that happened before the requested range.
+         *
+         * This lets 1M display a flat line even if
+         * the last actual sale occurred earlier.
          */
         Double lastKnownValue =
                 null;
 
 
         for (
-                Map.Entry<LocalDate, PriceHistoryPoint> entry
-                : actualWeeklyValues.entrySet()
+                Map.Entry<LocalDate, Double> entry :
+                actualValues.entrySet()
         ) {
 
             if (
-                    entry.getKey().isBefore(startWeek)
+                    entry.getKey()
+                            .isBefore(
+                                    startWeek
+                            )
                             ||
-                            entry.getKey().isEqual(startWeek)
+                            entry.getKey()
+                                    .isEqual(
+                                            startWeek
+                                    )
             ) {
 
                 lastKnownValue =
-                        entry.getValue().getValue();
+                        entry.getValue();
             }
         }
 
@@ -190,44 +297,46 @@ public class PriceHistoryService {
                 new ArrayList<>();
 
 
-        /*
-         * Walk through every week in the requested range.
-         *
-         * If there was a real sale that week:
-         *      use the new market value.
-         *
-         * If there was no sale:
-         *      carry forward the last known value.
-         */
         LocalDate week =
                 startWeek;
 
 
         while (
-                !week.isAfter(currentWeek)
+                !week.isAfter(
+                        currentWeek
+                )
         ) {
 
-            PriceHistoryPoint actualPoint =
-                    actualWeeklyValues.get(
+            Double actualValue =
+                    actualValues.get(
                             week
                     );
 
 
-            if (actualPoint != null) {
+            if (actualValue != null) {
 
                 lastKnownValue =
-                        actualPoint.getValue();
+                        actualValue;
 
 
                 history.add(
-                        actualPoint
+                        new PriceHistoryPoint(
+                                week,
+                                actualValue,
+                                1
+                        )
                 );
 
-            } else if (lastKnownValue != null) {
+            } else if (
+                    lastKnownValue != null
+            ) {
 
                 /*
-                 * sales = 0 means this is a carried-forward
-                 * value rather than a new market observation.
+                 * sales = 0 means no new market
+                 * observation existed this week.
+                 *
+                 * We are carrying forward the
+                 * previous known value.
                  */
                 history.add(
                         new PriceHistoryPoint(
@@ -240,7 +349,9 @@ public class PriceHistoryService {
 
 
             week =
-                    week.plusWeeks(1);
+                    week.plusWeeks(
+                            1
+                    );
         }
 
 
@@ -256,14 +367,24 @@ public class PriceHistoryService {
             String condition) {
 
         if (condition == null) {
-            return "NEW";
-        }
-
-
-        if (condition.equalsIgnoreCase("N") || condition.equalsIgnoreCase("NEW")) {
 
             return "NEW";
         }
+
+
+        if (
+                condition.equalsIgnoreCase(
+                        "N"
+                )
+                        ||
+                        condition.equalsIgnoreCase(
+                                "NEW"
+                        )
+        ) {
+
+            return "NEW";
+        }
+
 
         return "USED";
     }
@@ -273,30 +394,49 @@ public class PriceHistoryService {
     // PERIOD
     // ======================================================
 
-    private LocalDate getCutoffDate(String period) {
+    private LocalDate getCutoffDate(
+            String period) {
 
-        LocalDate today = LocalDate.now();
+        LocalDate today =
+                LocalDate.now();
 
 
-        if (period == null) {return today.minusMonths(6);}
+        if (period == null) {
+
+            return today.minusMonths(
+                    6
+            );
+        }
 
 
-        return switch (period.toUpperCase()) {
+        return switch (
+                period.toUpperCase()
+                ) {
 
             case "1M" ->
-                    today.minusMonths(1);
+                    today.minusMonths(
+                            1
+                    );
 
             case "3M" ->
-                    today.minusMonths(3);
+                    today.minusMonths(
+                            3
+                    );
 
             case "6M" ->
-                    today.minusMonths(6);
+                    today.minusMonths(
+                            6
+                    );
 
             case "12M" ->
-                    today.minusMonths(12);
+                    today.minusMonths(
+                            12
+                    );
 
             default ->
-                    today.minusMonths(6);
+                    today.minusMonths(
+                            6
+                    );
         };
     }
 
@@ -305,17 +445,31 @@ public class PriceHistoryService {
     // DATE PARSING
     // ======================================================
 
-    private LocalDate parseBrickLinkDate(String dateOrdered) {
+    private LocalDate parseBrickLinkDate(
+            String dateOrdered) {
 
         try {
 
-            if (dateOrdered == null || dateOrdered.length() < 10) {
+            if (
+                    dateOrdered == null
+                            ||
+                            dateOrdered.length() < 10
+            ) {
+
                 return null;
             }
 
-            return LocalDate.parse(dateOrdered.substring(0, 10));
+
+            return LocalDate.parse(
+                    dateOrdered.substring(
+                            0,
+                            10
+                    )
+            );
+
 
         } catch (Exception e) {
+
             return null;
         }
     }
@@ -325,23 +479,37 @@ public class PriceHistoryService {
     // OUTLIER FILTERING
     // ======================================================
 
-    private List<BrickLinkSale> removeOutliers(List<BrickLinkSale> sales) {
+    private List<BrickLinkSale>
+    removeOutliers(
+            List<BrickLinkSale> sales) {
 
         if (sales.size() < 4) {
-            return new ArrayList<>(sales);
+
+            return new ArrayList<>(
+                    sales
+            );
         }
 
 
-        List<Double> prices = sales.stream().map(BrickLinkSale::getUnitPrice).sorted().toList();
+        List<Double> prices =
+                sales.stream()
+                        .map(
+                                BrickLinkSale::getUnitPrice
+                        )
+                        .sorted()
+                        .toList();
 
 
-        double q1 = percentile(prices, 0.25);
+        double q1 =
+                percentile(
+                        prices,
+                        0.25
+                );
+
 
         double q3 = percentile(prices, 0.75);
 
-
         double iqr = q3 - q1;
-
 
         if (iqr == 0) {
             return new ArrayList<>(sales);
@@ -350,27 +518,29 @@ public class PriceHistoryService {
 
         double lowerBound = q1 - (1.5 * iqr);
 
+
         double upperBound = q3 + (1.5 * iqr);
 
 
-        List<BrickLinkSale> filtered = new ArrayList<>();
+        List<BrickLinkSale> filtered =
+                new ArrayList<>();
 
 
         for (BrickLinkSale sale : sales) {
 
             double price = sale.getUnitPrice();
 
-            if (
-                    price >= lowerBound && price <= upperBound
-            ) {
-
+            if (price >= lowerBound && price <= upperBound) {
                 filtered.add(sale);
             }
         }
 
 
         if (filtered.isEmpty()) {
-            return new ArrayList<>(sales);
+
+            return new ArrayList<>(
+                    sales
+            );
         }
 
 
@@ -382,21 +552,38 @@ public class PriceHistoryService {
     // PERCENTILE
     // ======================================================
 
-    private double percentile(List<Double> values, double percentile) {
+    private double percentile(
+            List<Double> values,
+            double percentile) {
 
         if (values.isEmpty()) {
+
             return 0;
         }
 
 
-        double index = percentile * (values.size() - 1);
+        double index =
+                percentile
+                        *
+                        (values.size() - 1);
 
 
-        int lowerIndex = (int) Math.floor(index);
-        int upperIndex = (int) Math.ceil(index);
+        int lowerIndex =
+                (int)
+                        Math.floor(
+                                index
+                        );
+
+
+        int upperIndex =
+                (int)
+                        Math.ceil(
+                                index
+                        );
 
 
         if (lowerIndex == upperIndex) {
+
             return values.get(lowerIndex);
         }
 
@@ -416,10 +603,8 @@ public class PriceHistoryService {
 
         int totalQuantity = 0;
 
-
         for (BrickLinkSale sale : sales) {
             int quantity = Math.max(sale.getQuantity(), 1);
-
 
             totalValue += sale.getUnitPrice() * quantity;
             totalQuantity += quantity;
@@ -430,7 +615,6 @@ public class PriceHistoryService {
             return 0;
         }
 
-
         return totalValue / totalQuantity;
     }
 
@@ -439,8 +623,11 @@ public class PriceHistoryService {
     // ROUNDING
     // ======================================================
 
-    private double roundToTwoDecimals(double value) {
+    private double roundToTwoDecimals(
+            double value) {
 
-        return Math.round(value * 100.0) / 100.0;
+        return Math.round(
+                value * 100.0
+        ) / 100.0;
     }
 }
