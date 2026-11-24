@@ -1,11 +1,12 @@
 package com.legoproject.backend;
 
-import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-@CrossOrigin
+import java.util.List;
+
 @RestController
 public class LegoController {
 
@@ -14,41 +15,58 @@ public class LegoController {
     private final BrickLinkService brickLinkService;
     private final PricingService pricingService;
     private final PriceHistoryService priceHistoryService;
+    private final PortfolioHistoryService portfolioHistoryService;
+    private final MarketValueRefreshService marketValueRefreshService;
+
 
     public LegoController(
             PortfolioService portfolioService,
             BrickLinkService brickLinkService,
             PricingService pricingService,
             UserRepository userRepository,
-            PriceHistoryService priceHistoryService) {
+            PriceHistoryService priceHistoryService,
+            PortfolioHistoryService portfolioHistoryService,
+            MarketValueRefreshService marketValueRefreshService) {
 
         this.portfolioService = portfolioService;
         this.brickLinkService = brickLinkService;
         this.pricingService = pricingService;
         this.userRepository = userRepository;
         this.priceHistoryService = priceHistoryService;
+        this.portfolioHistoryService = portfolioHistoryService;
+        this.marketValueRefreshService = marketValueRefreshService;
     }
 
 
     // ======================================================
-    // GET CURRENT USER
+    // AUTHENTICATION
     // ======================================================
 
     private User getAuthenticatedUser(
             Authentication authentication) {
 
-        if (
-                authentication == null || !authentication.isAuthenticated()
-        ) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You must be logged in");
+        if (authentication == null ||
+                !authentication.isAuthenticated()) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "You must be logged in"
+            );
         }
 
-        return userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+        return userRepository
+                .findByUsername(authentication.getName())
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.UNAUTHORIZED,
+                                "User not found"
+                        )
+                );
     }
 
 
     // ======================================================
-    // PORTFOLIO
+    // GET PORTFOLIO
     // ======================================================
 
     @GetMapping("/api/portfolio")
@@ -57,7 +75,13 @@ public class LegoController {
 
         User user = getAuthenticatedUser(authentication);
 
-        return portfolioService.getPortfolio(user.getId());
+        marketValueRefreshService.refreshPortfolioValues(
+                user.getId()
+        );
+
+        return portfolioService.getPortfolio(
+                user.getId()
+        );
     }
 
 
@@ -70,36 +94,39 @@ public class LegoController {
             @RequestBody AddSetRequest request,
             Authentication authentication) throws Exception {
 
-        /*
-         * IMPORTANT:
-         * The browser no longer tells us which user owns the set.
-         *
-         * The authenticated session determines the owner.
-         */
         User user = getAuthenticatedUser(authentication);
 
-
         String setNumber = request.getSetNumber();
-
         double purchasePrice = request.getPurchasePrice();
-
         String condition = request.getCondition();
 
-        String name = brickLinkService.getSetName(setNumber);
+        String name =
+                brickLinkService.getSetName(setNumber);
 
-        BrickLinkPriceGuide priceGuide = brickLinkService.getPriceGuide(setNumber, condition);
-        double estimatedValue = pricingService.calculateAverageWithoutOutliers(priceGuide);
-        LegoSet set = new LegoSet(setNumber, name, purchasePrice, estimatedValue);
+        BrickLinkPriceGuide priceGuide =
+                brickLinkService.getPriceGuide(
+                        setNumber,
+                        condition
+                );
 
+        double estimatedValue =
+                pricingService.calculateAverageWithoutOutliers(
+                        priceGuide
+                );
+
+        LegoSet set = new LegoSet(
+                setNumber,
+                name,
+                purchasePrice,
+                estimatedValue
+        );
 
         set.setCondition(condition);
 
-
-        /*
-         * The user ID comes from the server-side
-         * authenticated session.
-         */
-        portfolioService.addSet(set, user.getId());
+        portfolioService.addSet(
+                set,
+                user.getId()
+        );
     }
 
 
@@ -108,14 +135,25 @@ public class LegoController {
     // ======================================================
 
     @DeleteMapping("/api/sets/{id}")
-    public void deleteSet(@PathVariable Long id, Authentication authentication) {
+    public void deleteSet(
+            @PathVariable("id") Long id,
+            Authentication authentication) {
 
         User user = getAuthenticatedUser(authentication);
 
-        try {portfolioService.removeSet(id, user.getId());
+        try {
+
+            portfolioService.removeSet(
+                    id,
+                    user.getId()
+            );
 
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "LEGO set not found");
+
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "LEGO set not found"
+            );
         }
     }
 
@@ -126,19 +164,88 @@ public class LegoController {
 
     @PutMapping("/api/sets/{setNumber}")
     public void updateSet(
-            @PathVariable String setNumber,
+            @PathVariable("setNumber") String setNumber,
             @RequestBody LegoSet updatedSet,
             Authentication authentication) {
 
         User user = getAuthenticatedUser(authentication);
 
         try {
-            portfolioService.updateSet(setNumber, updatedSet, user.getId());
+
+            portfolioService.updateSet(
+                    setNumber,
+                    updatedSet,
+                    user.getId()
+            );
 
         } catch (IllegalArgumentException e) {
 
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "LEGO set not found");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "LEGO set not found"
+            );
         }
+    }
+
+
+    // ======================================================
+    // INDIVIDUAL SET PRICE HISTORY
+    // ======================================================
+
+    @GetMapping("/api/sets/{id}/history")
+    public List<PriceHistoryPoint> getSetPriceHistory(
+            @PathVariable("id") Long id,
+            @RequestParam(
+                    name = "period",
+                    defaultValue = "6M"
+            ) String period,
+            Authentication authentication) throws Exception {
+
+        User user = getAuthenticatedUser(authentication);
+
+        LegoSet set;
+
+        try {
+
+            set = portfolioService.getSetForUser(
+                    id,
+                    user.getId()
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "LEGO set not found"
+            );
+        }
+
+        return priceHistoryService.getPriceHistory(
+                set.getSetNumber(),
+                set.getCondition(),
+                period
+        );
+    }
+
+
+    // ======================================================
+    // OVERALL PORTFOLIO PRICE HISTORY
+    // ======================================================
+
+    @GetMapping("/api/portfolio/history")
+    public List<PortfolioHistoryPoint> getPortfolioHistory(
+            @RequestParam(
+                    name = "period",
+                    defaultValue = "6M"
+            ) String period,
+            Authentication authentication) throws Exception {
+
+        User user = getAuthenticatedUser(authentication);
+
+        return portfolioHistoryService.getPortfolioHistory(
+                user.getId(),
+                period
+        );
     }
 
 
@@ -148,9 +255,16 @@ public class LegoController {
 
     @GetMapping("/api/bricklink/price/{setNumber}")
     public BrickLinkPriceGuide getBrickLinkPrice(
-            @PathVariable String setNumber) throws Exception {
+            @PathVariable("setNumber") String setNumber,
+            @RequestParam(
+                    name = "condition",
+                    defaultValue = "NEW"
+            ) String condition) throws Exception {
 
-        return brickLinkService.getPriceGuide(setNumber, "NEW");
+        return brickLinkService.getPriceGuide(
+                setNumber,
+                condition
+        );
     }
 
 
@@ -160,110 +274,44 @@ public class LegoController {
 
     @GetMapping("/api/bricklink/price/{setNumber}/median")
     public double getMedianPrice(
-            @PathVariable String setNumber) throws Exception {
+            @PathVariable("setNumber") String setNumber,
+            @RequestParam(
+                    name = "condition",
+                    defaultValue = "NEW"
+            ) String condition) throws Exception {
 
-        BrickLinkPriceGuide priceGuide = brickLinkService.getPriceGuide(setNumber, "NEW");
+        BrickLinkPriceGuide priceGuide =
+                brickLinkService.getPriceGuide(
+                        setNumber,
+                        condition
+                );
 
-        return pricingService.calculateMedianPrice(priceGuide);
+        return pricingService.calculateMedianPrice(
+                priceGuide
+        );
     }
 
 
     // ======================================================
-    // BRICKLINK AVERAGE PRICE
+    // BRICKLINK FILTERED AVERAGE PRICE
     // ======================================================
 
     @GetMapping("/api/bricklink/price/{setNumber}/average")
     public double getAveragePrice(
-            @PathVariable String setNumber) throws Exception {
+            @PathVariable("setNumber") String setNumber,
+            @RequestParam(
+                    name = "condition",
+                    defaultValue = "NEW"
+            ) String condition) throws Exception {
 
-        BrickLinkPriceGuide priceGuide = brickLinkService.getPriceGuide(setNumber, "NEW");
-        return pricingService.calculateAverageWithoutOutliers(priceGuide);
-    }
+        BrickLinkPriceGuide priceGuide =
+                brickLinkService.getPriceGuide(
+                        setNumber,
+                        condition
+                );
 
-
-    // ======================================================
-    // OLD OCR IDENTIFICATION ENDPOINT
-    // ======================================================
-
-    @PostMapping("/api/bricklink/identify")
-    public String identifySet(
-            @RequestBody IdentifySetRequest request) {
-
-        String ocrText = request.getOcrText();
-
-        if (ocrText == null) {
-            ocrText = "";
-        }
-
-
-        String normalizedOcr =
-                ocrText
-                        .toLowerCase()
-                        .replaceAll(
-                                "[^a-z0-9 ]",
-                                " "
-                        )
-                        .replaceAll(
-                                "\\s+",
-                                " "
-                        );
-
-
-        String bestCandidate = "";
-
-        int bestScore = Integer.MIN_VALUE;
-
-
-        java.util.List<String> candidates = request.getCandidates();
-
-        for (int i = 0; i < candidates.size(); i++) {
-            String candidate = candidates.get(i);
-
-
-            try {
-                String setName = brickLinkService.getSetName(candidate);
-
-                String normalizedName = setName.toLowerCase().replaceAll("[^a-z0-9 ]", " ").replaceAll("\\s+", " ").trim();
-                int score = 100 - (i * 5);
-
-                if (!normalizedName.isEmpty() && normalizedOcr.contains(normalizedName)) {
-                    score += 1000;
-                }
-
-
-                String[] words = normalizedName.split(" ");
-
-
-                for (String word : words) {
-                    if (word.length() >= 4 && normalizedOcr.contains(word)) {
-                        score += 150;
-                    }
-                }
-
-                System.out.println(candidate + " | " + setName + " | score = " + score);
-
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestCandidate = candidate;
-                }
-
-
-            } catch (Exception e) {
-
-                // Not a valid BrickLink set.
-            }
-        }
-
-        return bestCandidate;
-    }
-
-    @GetMapping("/api/sets/{id}/history")
-    public java.util.List<PriceHistoryPoint> getSetPriceHistory(@PathVariable Long id, @RequestParam(defaultValue = "6M") String period, Authentication authentication) throws Exception {
-
-        User user = getAuthenticatedUser(authentication);
-
-        LegoSet set = portfolioService.getSetForUser(id, user.getId());
-
-        return priceHistoryService.getPriceHistory(set.getSetNumber(), set.getCondition(), period);
+        return pricingService.calculateAverageWithoutOutliers(
+                priceGuide
+        );
     }
 }
